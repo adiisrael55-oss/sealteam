@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SEALTEAM — חתימה על טופס השכרה</title>
+<style>
+  :root{ --bg:#f4f3ee; --card:#fff; --text:#1a1a1a; --text2:#5f5e5a; --text3:#9b9a93; --border:#e4e2d9; --teal:#0F6E56; --tealbg:#E1F5EE; --tealbd:#5DCAA5; --navy:#0f3460; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Heebo','Noto Sans Hebrew',-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5}
+  #app{max-width:560px;margin:0 auto;padding:12px}
+  .hdr{background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);border-radius:16px;padding:20px 22px;margin-bottom:14px;color:#fff;text-align:center}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
+  .lbl{font-size:12px;color:var(--text3)}
+  .val{font-weight:600}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}
+  .photos img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid var(--border)}
+  canvas{width:100%;height:160px;border-radius:10px;border:1.5px dashed #cfcdc3;background:#faf9f5;touch-action:none;display:block}
+  button{cursor:pointer;border:none;border-radius:10px;padding:13px 18px;font-weight:600;font-size:15px;width:100%}
+  .btn-teal{background:var(--teal);color:#fff}
+  .btn-ghost{background:#faf9f5;border:1px solid var(--border);color:var(--text);font-size:13px;padding:8px 14px;width:auto}
+  .spin{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--teal);border-radius:50%;animation:s .8s linear infinite;margin:50px auto}
+  @keyframes s{to{transform:rotate(360deg)}}
+  .center{text-align:center;padding:40px 20px;color:var(--text2)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  td{padding:6px 4px;border-bottom:1px solid var(--border)}
+</style>
+<script type="importmap">{ "imports": { "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2" } }</script>
+</head>
+<body>
+<div id="app"><div class="spin"></div></div>
+<script type="module">
+import { createClient } from '@supabase/supabase-js';
+const sb = createClient('https://idkjxjbpljefacqwhtnl.supabase.co','sb_publishable_P6IxfEhlFZcxDkrKQd6vig_4MLpb02z');
+const app = document.getElementById('app');
+const esc = s => (s==null?'':s.toString()).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmtD = d => { if(!d) return ''; const x=new Date(d); return isNaN(x)?'':`${String(x.getDate()).padStart(2,'0')}/${String(x.getMonth()+1).padStart(2,'0')}/${x.getFullYear()}`; };
+const token = new URLSearchParams(location.search).get('token');
+
+async function main(){
+  if(!token){ app.innerHTML='<div class="center">קישור לא תקין.</div>'; return; }
+  const { data, error } = await sb.rpc('get_rental_for_signing', { p_token: token });
+  if(error || !data){ app.innerHTML=`<div class="center">הקישור אינו תקף או שפג תוקפו.<br><span style="font-size:12px">${esc(error?.message||'')}</span></div>`; return; }
+  render(data);
+}
+
+function render(r){
+  const photos=(r.photos||[]);
+  const lines=(r.lines||[]);
+  app.innerHTML=`
+    <div class="hdr">
+      <div style="font-size:24px;font-weight:700;letter-spacing:2px">SEALTEAM</div>
+      <div style="font-size:13px;opacity:.7;margin-top:2px">טופס השכרת פיגומים — אישור וחתימה</div>
+    </div>
+    <div class="card">
+      <div class="grid">
+        <div><div class="lbl">לקוח</div><div class="val">${esc(r.customer_name||'')}</div></div>
+        <div><div class="lbl">מס׳ השכרה</div><div class="val">${esc(r.rental_num||'—')}</div></div>
+        <div><div class="lbl">אתר</div><div class="val">${esc(r.site||'')}</div></div>
+        <div><div class="lbl">תאריך</div><div class="val">${fmtD(r.date)}</div></div>
+      </div>
+      ${r.site_address?`<div style="margin-top:8px"><div class="lbl">כתובת אתר</div><div class="val">${esc(r.site_address)}</div></div>`:''}
+    </div>
+
+    ${photos.length?`<div class="card">
+      <div style="font-weight:600;margin-bottom:10px">📸 תיעוד מצב הציוד (${photos.length})</div>
+      <div class="photos">${photos.map(p=>`<a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" loading="lazy"></a>`).join('')}</div>
+    </div>`:''}
+
+    ${lines.length?`<div class="card">
+      <div style="font-weight:600;margin-bottom:8px">📋 פירוט</div>
+      <table><tbody>${lines.map(l=>`<tr><td>${esc(l.description||l.sku)}</td><td style="text-align:left;white-space:nowrap">${l.qty||1} × ₪${Number(l.price||0).toLocaleString()}</td></tr>`).join('')}</tbody></table>
+    </div>`:''}
+
+    <div class="card" id="signCard">
+      ${r.signed?`<div class="center" style="padding:20px 0"><div style="font-size:38px">✅</div><div style="font-weight:600;font-size:17px">הטופס כבר נחתם</div><div style="font-size:13px;color:var(--text2)">תודה!</div></div>`:`
+        <div style="font-weight:600;margin-bottom:6px">✍️ חתימת הלקוח</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:10px">אני מאשר/ת את קבלת הציוד ואת תיעוד המצב המוצג למעלה.</div>
+        <canvas id="sig"></canvas>
+        <div style="display:flex;justify-content:flex-end;margin:8px 0"><button class="btn-ghost" id="clr">נקה</button></div>
+        <button class="btn-teal" id="submit">אישור וחתימה</button>
+        <div id="msg" style="text-align:center;font-size:13px;margin-top:10px;min-height:16px"></div>`}
+    </div>`;
+  if(!r.signed) initSign();
+}
+
+function initSign(){
+  const c=document.getElementById('sig'), ctx=c.getContext('2d'), ratio=devicePixelRatio||1;
+  c.width=c.offsetWidth*ratio; c.height=c.offsetHeight*ratio; ctx.scale(ratio,ratio);
+  ctx.lineCap='round'; ctx.lineJoin='round'; ctx.lineWidth=2.5; ctx.strokeStyle='#1a1a2e';
+  let drawing=false, has=false;
+  const pos=e=>{const r=c.getBoundingClientRect();const t=e.touches?.[0]||e;return{x:t.clientX-r.left,y:t.clientY-r.top};};
+  const start=e=>{e.preventDefault();drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);};
+  const move=e=>{if(!drawing)return;e.preventDefault();const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();has=true;};
+  const end=()=>{drawing=false;};
+  c.onmousedown=start;c.onmousemove=move;c.onmouseup=end;c.onmouseleave=end;
+  c.ontouchstart=start;c.ontouchmove=move;c.ontouchend=end;
+  document.getElementById('clr').onclick=()=>{ctx.clearRect(0,0,c.width,c.height);has=false;};
+  document.getElementById('submit').onclick=async()=>{
+    const msg=document.getElementById('msg');
+    if(!has){ msg.style.color='#A32D2D'; msg.textContent='נא לחתום קודם'; return; }
+    msg.style.color='var(--text2)'; msg.textContent='שולח...';
+    const { data, error } = await sb.rpc('submit_customer_signature', { p_token: token, p_sig: c.toDataURL('image/png') });
+    if(error || data===false){ msg.style.color='#A32D2D'; msg.textContent='שגיאה בשמירה: '+(error?.message||'קישור לא תקף'); return; }
+    document.getElementById('signCard').innerHTML='<div class="center" style="padding:20px 0"><div style="font-size:38px">✅</div><div style="font-weight:600;font-size:17px">תודה! החתימה נשמרה</div><div style="font-size:13px;color:var(--text2)">אפשר לסגור את החלון.</div></div>';
+  };
+}
+main();
+</script>
+</body>
+</html>

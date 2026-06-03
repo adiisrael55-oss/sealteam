@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SEALTEAM — מערכת השכרות</title>
+<style>
+  :root{
+    --bg:#f4f3ee; --card:#fff; --card2:#faf9f5; --text:#1a1a1a; --text2:#5f5e5a; --text3:#9b9a93;
+    --border:#e4e2d9; --border2:#cfcdc3; --teal:#0F6E56; --tealbg:#E1F5EE; --tealbd:#5DCAA5;
+    --amber:#854F0B; --amberbg:#FAEEDA; --red:#A32D2D; --redbg:#FCEBEB; --purple:#534AB7; --purplebg:#EEEDFE;
+    --orange:#C4550A; --orangebg:#FFF0E6; --blue:#185FA5; --bluebg:#E6F1FB;
+    --navy:#0f3460; --success-bg:#EBF7F1;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#1a1a1e; --card:#26262b; --card2:#2e2e34; --text:#e8e6de; --text2:#b4b2a9; --text3:#7d7c76; --border:#3a3a40; --border2:#4a4a50; --success-bg:#1f352c; }
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Heebo','Noto Sans Hebrew',-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-tap-highlight-color:transparent}
+  #app{max-width:760px;margin:0 auto;padding:10px}
+  input,select,textarea,button{font-family:inherit;font-size:14px}
+  input,select,textarea{width:100%;padding:9px 11px;border-radius:8px;border:1px solid var(--border);background:var(--card2);color:var(--text);outline:none}
+  input:focus,select:focus,textarea:focus{border-color:var(--teal)}
+  label{display:block;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:4px}
+  button{cursor:pointer;border:none;border-radius:10px;padding:10px 18px;font-weight:500;display:inline-flex;align-items:center;gap:6px;justify-content:center}
+  .btn-primary{background:var(--navy);color:#fff}
+  .btn-ghost{background:var(--card2);color:var(--text);border:1px solid var(--border)}
+  .btn-teal{background:var(--teal);color:#fff}
+  .btn-red{background:var(--red);color:#fff}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px}
+  .hdr{background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);border-radius:16px;padding:20px 22px;margin-bottom:14px;color:#fff}
+  .badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;border:1px solid}
+  .b-teal{background:var(--tealbg);color:var(--teal);border-color:var(--tealbd)}
+  .b-amber{background:var(--amberbg);color:var(--amber);border-color:#EF9F27}
+  .b-red{background:var(--redbg);color:var(--red);border-color:#F09595}
+  .b-orange{background:var(--orangebg);color:var(--orange);border-color:#F0A06A}
+  .b-blue{background:var(--bluebg);color:var(--blue);border-color:#85B7EB}
+  .b-purple{background:var(--purplebg);color:var(--purple);border-color:#AFA9EC}
+  .b-gray{background:var(--card2);color:var(--text2);border-color:var(--border2)}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px}
+  .glass{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.15)}
+  .glass::placeholder{color:rgba(255,255,255,.4)}
+  .glass-label{color:rgba(255,255,255,.5)!important}
+  .tabs{display:flex;border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-bottom:14px}
+  .tab{flex:1;padding:11px 4px;text-align:center;font-size:12px;font-weight:500;cursor:pointer;background:var(--card2);color:var(--text2);border:none;border-bottom:3px solid transparent}
+  .tab.active{background:var(--card);border-bottom-color:var(--teal)}
+  .listitem{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px 15px;margin-bottom:7px;cursor:pointer}
+  .listitem:hover{border-color:var(--border2)}
+  .spin{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--teal);border-radius:50%;animation:s 0.8s linear infinite;margin:40px auto}
+  @keyframes s{to{transform:rotate(360deg)}}
+  .center{text-align:center;padding:40px 20px;color:var(--text3)}
+  video{width:100%;border-radius:12px;background:#000}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 22px;border-radius:30px;z-index:9999;font-size:13px;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+  .mono{font-family:monospace;font-weight:600;letter-spacing:1px}
+  .chk{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;background:var(--card2);border:1px solid var(--border);font-size:13px}
+  .chk.on{background:var(--success-bg);border-color:var(--tealbd)}
+  .chk input{width:18px;height:18px;accent-color:var(--teal);flex-shrink:0}
+  .pill{padding:5px 11px;font-size:12px;border-radius:20px;background:var(--card2);color:var(--text2);border:1px solid var(--border)}
+  .pill.on{background:var(--tealbg);color:var(--teal);border-color:var(--tealbd)}
+  .stat{text-align:center;padding:12px;border-radius:12px;background:var(--card);border:1px solid var(--border)}
+  .stat .v{font-size:24px;font-weight:700}
+  .stat .l{font-size:11px;color:var(--text2)}
+  canvas.sig{width:100%;height:110px;border-radius:10px;border:1.5px dashed var(--border2);background:var(--card2);touch-action:none;cursor:crosshair;display:block}
+</style>
+<script type="importmap">
+{ "imports": {
+  "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2",
+  "xlsx": "https://esm.sh/xlsx@0.18.5"
+} }
+</script>
+</head>
+<body>
+<div id="app"><div class="spin"></div></div>
+
+<script type="module">
+import { createClient } from '@supabase/supabase-js';
+import * as XLSX from 'xlsx';
+
+const SUPABASE_URL = 'https://idkjxjbpljefacqwhtnl.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_P6IxfEhlFZcxDkrKQd6vig_4MLpb02z';
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const app = document.getElementById('app');
+let state = {
+  user:null, profile:null, view:'list', mainTab:'rentals',
+  rentals:[], catalog:[], warehouse:{}, profiles:[],
+  current:null, tab:'start',
+  whFilterLoc:'all', whFilterStatus:'all', whSearch:'',
+  rptFrom:'', rptTo:'', rptCust:'', rptStatus:'all',
+};
+
+// ─── Constants (ported from demo) ───
+const CK_START = ["שלמות חלקים","ברגים וחיבורים","קונסולות/עוגנים","מעקות בטיחות","דריכות/משטחים","כבלים ושרשראות","מנועים תקינים","שלט פיקוד תקין","צילום מצב"];
+const CK_END   = ["כל החלקים הוחזרו","בדיקת נזקים","ניקיון ציוד","ספירת רכיבים","צילום סיום","חתימת לקוח"];
+const CONDITIONS = ["תקין","שריטות קלות","נזק קל","נזק משמעותי","לא תקין"];
+const COMMON_FAULTS = ["כבל חשמל פגום/חתוך","בלם לא תופס","רעש חריג בגלגל שיניים","מנוע נשרף","מנוע לא עולה/יורד","כבל פלדה שחוק/קרוע","שלט פיקוד לא מגיב","חיישן עומס תקול","דליפת שמן/גריז","התחממות יתר","חיבור חשמלי רופף","בלאי כללי מהשטח"];
+const MOTOR_CONDITIONS = [
+  {id:"ok",     label:"תקין",     bd:"b-teal",  icon:"✅", wh:"available"},
+  {id:"minor",  label:"תקלה קלה", bd:"b-amber", icon:"⚠️", wh:"maintenance"},
+  {id:"fault",  label:"תקול",     bd:"b-red",   icon:"🔴", wh:"repair"},
+  {id:"broken", label:"לא עובד",  bd:"b-red",   icon:"❌", wh:"repair"},
+];
+const WH_STATUSES = [
+  {id:"available",   label:"זמין",          bd:"b-teal",  icon:"✅"},
+  {id:"maintenance", label:"בתחזוקה",       bd:"b-amber", icon:"🔧"},
+  {id:"repair",      label:"דורש תיקון",    bd:"b-red",   icon:"⚠️"},
+  {id:"reserved",    label:"שמור להזמנה",   bd:"b-blue",  icon:"📌"},
+];
+const REPORT_TYPES = [
+  { id:"active",    label:"השכרות פעילות",            desc:"כל ההשכרות הפעילות כרגע",            icon:"📋" },
+  { id:"motors",    label:"מעקב מנועים",              desc:"איפה כל מנוע — מס׳ מכשיר, לקוח, אתר", icon:"⚡" },
+  { id:"financial", label:"דוח כספי",                 desc:"סיכום הכנסות לפי לקוח",               icon:"💰" },
+  { id:"bydate",    label:"דוח לפי תאריכים",          desc:"השכרות בטווח תאריכים",               icon:"📅" },
+  { id:"bycustomer",label:"דוח לפי לקוח",             desc:"כל ההשכרות של לקוח מסוים",            icon:"👤" },
+  { id:"equipment", label:"ציוד באתרים",              desc:"איזה ציוד באיזה אתר כרגע",           icon:"🏗️" },
+  { id:"priority",  label:"ייצוא כל ההשכרות — Priority", desc:"קובץ מוכן לייבוא לפריוריטי",       icon:"📊" },
+];
+
+// ─── במות הרמה — מפרט ZOOMLION DC Series (מתוך הקטלוג) ───
+const LIFTS = [
+  { sku:'ZS1414DC', wh:'15.7 מ׳', cap:'260 ק״ג', video:'8eupl5hK4pk',
+    highlights:['הנעה חשמלית ישירה המכפילה את היעילות לעומת הנעה הידראולית','כושר נשיאה מוגבר וביצועים משופרים בשטח','הנעה ובלימה בגלגלים הקדמיים לניידות מרבית'],
+    specs:[['גובה עבודה מקסימלי','15.7 מ׳ (51ft 6in)'],['כושר נשיאה בפלטפורמה','260 ק״ג'],['גובה במה מורמת (A)','13.7 מ׳'],['כושר נשיאה בהארכה','113 ק״ג'],['גובה במה סגורה (B)','1.53 מ׳'],['מספר עובדים מקסימלי','2'],['מידות פלטפורמה','2.67 × 1.12 מ׳'],['מהירות נסיעה (סגור/מורם)','4 / 0.8 קמ״ש'],['אורך/רוחב כולל','2.87 × 1.4 מ׳'],['יכולת טיפוס','25%'],['מערכת מצברים','4x12V / 300Ah'],['משקל עצמי','3,570 ק״ג'],['זמן הרמה/הורדה','88 / 60 ש׳'],['רדיוס סיבוב חיצוני','2.6 מ׳']] },
+  { sku:'ZS1212DC', wh:'13.8 מ׳', cap:'350 ק״ג', video:'UQxFJKC1tGU',
+    highlights:['מערכת פיקוד פרופורציונלית מתקדמת לשליטה חלקה ומדויקת','ניתנת להסעה מלאה ובטוחה גם בגובה עבודה מקסימלי','מערכת הגנה אקטיבית מפני בורות (Pothole Protection)'],
+    specs:[['גובה עבודה מקסימלי','13.80 מ׳ (45ft 3in)'],['כושר נשיאה בפלטפורמה','350 ק״ג'],['גובה במה מורמת (A)','11.80 מ׳'],['כושר נשיאה בהארכה','113 ק״ג'],['גובה במה סגורה (B)','1.46 מ׳'],['מספר עובדים מקסימלי','2'],['מידות פלטפורמה','2.30 × 1.12 מ׳'],['מהירות נסיעה (סגור/מורם)','4 / 0.8 קמ״ש'],['אורך/רוחב כולל','2.49 × 1.15 מ׳'],['יכולת טיפוס','25% (14°)'],['מערכת מצברים','4x12V / 300Ah'],['משקל עצמי','2,930 ק״ג'],['זמן הרמה/הורדה','62 / 42 ש׳'],['רדיוס סיבוב חיצוני','2.2 מ׳']] },
+  { sku:'ZS1012DC', wh:'11.8 מ׳', cap:'380 ק״ג', video:'gdVfZymVnEY',
+    highlights:['כושר הנשיאה הגבוה בסדרה — עד 380 ק״ג עומס','מערכת אבחון תקלות מובנית על לוח הפיקוד','עיצוב חזק ועמיד לעבודה אינטנסיבית'],
+    specs:[['גובה עבודה מקסימלי','11.80 מ׳ (38ft 9in)'],['כושר נשיאה בפלטפורמה','380 ק״ג'],['גובה במה מורמת (A)','9.80 מ׳'],['כושר נשיאה בהארכה','113 ק״ג'],['גובה במה סגורה (B)','1.33 מ׳'],['מספר עובדים מקסימלי','2'],['מידות פלטפורמה','2.30 × 1.12 מ׳'],['מהירות נסיעה (סגור/מורם)','4 / 0.8 קמ״ש'],['אורך/רוחב כולל','2.49 × 1.15 מ׳'],['יכולת טיפוס','25% (14°)'],['מערכת מצברים','4x6V / 240Ah'],['משקל עצמי','3,210 ק״ג'],['זמן הרמה/הורדה','60 / 35 ש׳'],['רדיוס סיבוב חיצוני','2.2 מ׳']] },
+  { sku:'ZS0808DC', wh:'10.0 מ׳', cap:'230 ק״ג', video:'lsUdrgBuYv0',
+    highlights:['רוחב במה צר במיוחד (81 ס״מ) למעבר במסדרונות ודלתות','איזון בין משקל עצמי נמוך לגובה עבודה של 10 מטרים','מערכת הגנה חכמה מטעינת יתר'],
+    specs:[['גובה עבודה מקסימלי','10.00 מ׳ (32ft 10in)'],['כושר נשיאה בפלטפורמה','230 ק״ג'],['גובה במה מורמת (A)','8.00 מ׳'],['כושר נשיאה בהארכה','113 ק״ג'],['גובה במה סגורה (B)','1.20 מ׳'],['מספר עובדים מקסימלי','2'],['מידות פלטפורמה','2.30 × 0.81 מ׳'],['מהירות נסיעה (סגור/מורם)','4 / 0.8 קמ״ש'],['אורך/רוחב כולל','2.49 × 0.81 מ׳'],['יכולת טיפוס','25% (14°)'],['מערכת מצברים','4x6V / 225Ah'],['משקל עצמי','2,090 ק״ג'],['זמן הרמה/הורדה','31 / 40 ש׳'],['רדיוס סיבוב חיצוני','2.1 מ׳']] },
+  { sku:'ZS0608DC', wh:'8.0 מ׳', cap:'350 ק״ג', video:'UQxFJKC1tGU',
+    highlights:['הדגם היחיד בסדרה המאשר עבודת 3 עובדים בו-זמנית','כושר הרמה 350 ק״ג לגודלו הקומפקטי','מחזורי עבודה מהירים: הרמה 20 ש׳, הורדה 24 ש׳'],
+    specs:[['גובה עבודה מקסימלי','8.00 מ׳ (25ft 3in)'],['כושר נשיאה בפלטפורמה','350 ק״ג'],['גובה במה מורמת (A)','6.00 מ׳'],['כושר נשיאה בהארכה','113 ק״ג'],['גובה במה סגורה (B)','1.07 מ׳'],['מספר עובדים מקסימלי','3'],['מידות פלטפורמה','2.30 × 0.81 מ׳'],['מהירות נסיעה (סגור/מורם)','4 / 0.8 קמ״ש'],['אורך/רוחב כולל','2.49 × 0.81 מ׳'],['יכולת טיפוס','25% (14°)'],['מערכת מצברים','4x6V / 225Ah'],['משקל עצמי','1,940 ק״ג'],['זמן הרמה/הורדה','20 / 24 ש׳'],['רדיוס סיבוב חיצוני','2.1 מ׳']] },
+  { sku:'ZS0607DC', wh:'7.87 מ׳', cap:'230 ק״ג', video:'jMzZtAv0FLw',
+    highlights:['יכולת הטיפוס הטובה בסדרה: 30% (17°)','הדגם הקל והקומפקטי ביותר (1,455 ק״ג)','רדיוס סיבוב מינימלי של 1.6 מ׳ — הקטן בסדרה'],
+    specs:[['גובה עבודה מקסימלי','7.87 מ׳ (25ft 7in)'],['כושר נשיאה בפלטפורמה','230 ק״ג'],['גובה במה מורמת (A)','5.87 מ׳'],['כושר נשיאה בהארכה','113 ק״ג'],['גובה במה סגורה (B)','1.05 מ׳'],['מספר עובדים מקסימלי','2'],['מידות פלטפורמה','1.65 × 0.74 מ׳'],['מהירות נסיעה (סגור/מורם)','4 / 0.8 קמ״ש'],['אורך/רוחב כולל','1.85 × 0.76 מ׳'],['יכולת טיפוס','30% (17°) — הגבוה בסדרה'],['מערכת מצברים','4x6V / 210Ah'],['משקל עצמי','1,455 ק״ג'],['זמן הרמה/הורדה','28 / 35 ש׳'],['רדיוס סיבוב חיצוני','1.6 מ׳']] },
+];
+const LIFT_TRANSPORT = { sku:'הובלה-במה', description:'הובלה במת הרמה (הלוך/חזור)', unit:'יח׳', price:0, category:'במות הרמה' };
+
+// ─── Helpers ───
+const esc = s => (s==null?'':s.toString()).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmtD = d => { if(!d) return ''; const x=new Date(d); if(isNaN(x)) return ''; return `${String(x.getDate()).padStart(2,'0')}/${String(x.getMonth()+1).padStart(2,'0')}/${x.getFullYear()}`; };
+const today = () => new Date().toISOString().split('T')[0];
+const nowTime = () => new Date().toTimeString().slice(0,5);
+function toast(msg){ const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2600); }
+function roleLabel(r){ return ({manager:'מנהל',field:'איש שטח',team:'צוות',pending:'ממתין לאישור'})[r]||r; }
+function calcDays(s,e){ if(!s) return null; const end=e?new Date(e):new Date(); return Math.max(Math.ceil((end-new Date(s))/864e5),0); }
+
+// ─── Init / Auth ───
+async function init(){
+  const { data:{ session } } = await sb.auth.getSession();
+  if(session){ state.user=session.user; await loadProfile(); await afterLogin(); }
+  else renderAuth();
+  sb.auth.onAuthStateChange((_e,s)=>{ if(!s){ state.user=null; state.profile=null; renderAuth(); } });
+}
+async function loadProfile(){
+  const { data } = await sb.from('profiles').select('*').eq('id', state.user.id).single();
+  state.profile = data || { role:'pending', full_name:state.user.email };
+}
+async function afterLogin(){
+  if(!state.profile || state.profile.role==='pending'){ renderPending(); return; }
+  await loadData(); render();
+}
+async function loadData(){
+  const isMgr = state.profile.role==='manager';
+  const reqs = [
+    sb.from('rentals').select('*, rental_lines(*), motors(*)').order('created_at',{ascending:false}),
+    sb.from('catalog').select('*').order('category').order('sku'),
+    sb.from('warehouse').select('*'),
+  ];
+  if(isMgr) reqs.push(sb.from('profiles').select('*').order('created_at'));
+  const res = await Promise.all(reqs);
+  state.rentals = res[0].data||[];
+  state.catalog = res[1].data||[];
+  state.warehouse = {}; (res[2].data||[]).forEach(w=>state.warehouse[w.device_num]=w);
+  state.profiles = isMgr ? (res[3].data||[]) : [];
+  // photos — separate, tolerant if table not migrated yet
+  const ph = await sb.from('rental_photos').select('*').order('created_at');
+  const byR={}; (ph.data||[]).forEach(p=>{ (byR[p.rental_id]=byR[p.rental_id]||[]).push(p); });
+  state.rentals.forEach(r=>{ r.rental_photos = byR[r.id]||[]; });
+}
+
+function renderAuth(){
+  app.innerHTML = `
+    <div style="max-width:380px;margin:50px auto">
+      <div class="hdr" style="text-align:center">
+        <div style="font-size:28px;font-weight:700;letter-spacing:2px">SEALTEAM</div>
+        <div style="font-size:13px;opacity:.6;margin-top:4px">מערכת השכרת פיגומים</div>
+      </div>
+      <div class="card">
+        <div id="authTitle" style="font-size:17px;font-weight:600;margin-bottom:14px">התחברות</div>
+        <div id="nameField" style="display:none;margin-bottom:10px"><label>שם מלא</label><input id="aName" placeholder="השם שלך..."></div>
+        <div style="margin-bottom:10px"><label>אימייל</label><input id="aEmail" type="email" placeholder="you@example.com" autocomplete="email"></div>
+        <div style="margin-bottom:14px"><label>סיסמה</label><input id="aPass" type="password" placeholder="••••••••" autocomplete="current-password"></div>
+        <button class="btn-primary" style="width:100%" id="authBtn">התחבר</button>
+        <div id="authErr" style="font-size:12px;margin-top:10px;text-align:center;min-height:16px"></div>
+        <div style="text-align:center;margin-top:10px;font-size:13px;color:var(--text2)">
+          <span id="toggleAuth" style="cursor:pointer;text-decoration:underline">אין לך חשבון? הירשם</span>
+        </div>
+      </div>
+    </div>`;
+  let isSignup=false;
+  const $=id=>document.getElementById(id);
+  $('toggleAuth').onclick=()=>{
+    isSignup=!isSignup;
+    $('authTitle').textContent=isSignup?'הרשמה':'התחברות';
+    $('nameField').style.display=isSignup?'block':'none';
+    $('authBtn').textContent=isSignup?'הירשם':'התחבר';
+    $('toggleAuth').textContent=isSignup?'יש לך חשבון? התחבר':'אין לך חשבון? הירשם';
+    $('authErr').textContent='';
+  };
+  $('authBtn').onclick=async()=>{
+    const email=$('aEmail').value.trim(), pass=$('aPass').value, err=$('authErr');
+    err.textContent=''; err.style.color='var(--red)';
+    if(!email||!pass){ err.textContent='מלא אימייל וסיסמה'; return; }
+    try{
+      if(isSignup){
+        const name=$('aName').value.trim();
+        const { error } = await sb.auth.signUp({ email, password:pass, options:{ data:{ full_name:name } } });
+        if(error) throw error;
+        err.style.color='var(--teal)';
+        err.textContent='נרשמת! ממתין לאישור מנהל.';
+      } else {
+        const { error } = await sb.auth.signInWithPassword({ email, password:pass });
+        if(error) throw error;
+      }
+      const { data:{ session } } = await sb.auth.getSession();
+      if(session){ state.user=session.user; await loadProfile(); await afterLogin(); }
+    }catch(e){ err.style.color='var(--red)'; err.textContent = e.message==='Invalid login credentials'?'אימייל או סיסמה שגויים':e.message; }
+  };
+}
+
+function renderPending(){
+  app.innerHTML = `
+    <div style="max-width:420px;margin:60px auto;text-align:center">
+      <div class="hdr"><div style="font-size:26px;font-weight:700;letter-spacing:2px">SEALTEAM</div></div>
+      <div class="card">
+        <div style="font-size:40px;margin-bottom:8px">⏳</div>
+        <div style="font-size:17px;font-weight:600;margin-bottom:6px">החשבון ממתין לאישור</div>
+        <div style="color:var(--text2);font-size:13px;margin-bottom:16px">נרשמת בהצלחה. מנהל המערכת צריך לאשר את החשבון שלך לפני שתוכל להיכנס. נסה שוב מאוחר יותר.</div>
+        <button class="btn-ghost" id="reBtn" style="width:100%;margin-bottom:8px">בדוק שוב</button>
+        <button class="btn-ghost" id="outBtn" style="width:100%">יציאה</button>
+      </div>
+    </div>`;
+  document.getElementById('reBtn').onclick=async()=>{ await loadProfile(); await afterLogin(); };
+  document.getElementById('outBtn').onclick=async()=>{ await sb.auth.signOut(); };
+}
+
+// ─── Totals ───
+function rentalTotal(r){
+  const lt=(r.rental_lines||[]).reduce((s,l)=>s+(parseFloat(l.qty)||0)*(parseFloat(l.price)||0),0);
+  return lt*(1-(r.discount||0)/100);
+}
+function motorCount(r){ return (r.motors||[]).filter(m=>m.device_num).length; }
+
+// ─── Render router ───
+function render(){
+  if(state.view==='edit' && state.current) return renderEdit();
+  renderList();
+}
+
+function renderList(){
+  const r=state.profile.role, isMgr=r==='manager';
+  app.innerHTML = `
+    <div class="hdr">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:22px;font-weight:700;letter-spacing:2px">SEALTEAM</div>
+          <div style="font-size:12px;opacity:.6;margin-top:2px">שלום ${esc(state.profile.full_name||'')} · ${roleLabel(r)}</div>
+        </div>
+        <div class="row">
+          <button class="glass" style="padding:8px 14px;font-size:13px" id="logoutBtn">יציאה</button>
+          ${state.mainTab==='rentals'?`<button class="glass" style="padding:8px 14px" id="newBtn">+ חדש</button>`:''}
+        </div>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab ${state.mainTab==='rentals'?'active':''}" data-mt="rentals">השכרות</button>
+      <button class="tab ${state.mainTab==='warehouse'?'active':''}" data-mt="warehouse">מחסן</button>
+      <button class="tab ${state.mainTab==='lifts'?'active':''}" data-mt="lifts">במות הרמה</button>
+      <button class="tab ${state.mainTab==='reports'?'active':''}" data-mt="reports">דוחות</button>
+      ${isMgr?`<button class="tab ${state.mainTab==='prices'?'active':''}" data-mt="prices">מחירון</button>`:''}
+      ${isMgr?`<button class="tab ${state.mainTab==='users'?'active':''}" data-mt="users">משתמשים</button>`:''}
+    </div>
+    <div id="mainContent"></div>`;
+  document.getElementById('logoutBtn').onclick=async()=>{ await sb.auth.signOut(); };
+  const nb=document.getElementById('newBtn'); if(nb) nb.onclick=newRental;
+  document.querySelectorAll('[data-mt]').forEach(b=>b.onclick=()=>{ state.mainTab=b.dataset.mt; renderList(); });
+  const mc=document.getElementById('mainContent');
+  if(state.mainTab==='warehouse') renderWarehouse(mc);
+  else if(state.mainTab==='lifts') renderLifts(mc);
+  else if(state.mainTab==='reports') renderReports(mc);
+  else if(state.mainTab==='prices') renderPrices(mc);
+  else if(state.mainTab==='users') renderUsers(mc);
+  else renderRentals(mc);
+}
+
+// ─── Rentals list ───
+function renderRentals(mc){
+  const isMgr=state.profile.role==='manager';
+  const totalRev=state.rentals.reduce((s,x)=>s+rentalTotal(x),0);
+  const activeCount=state.rentals.filter(r=>r.status==='active').length;
+  mc.innerHTML = `
+    <div style="margin-bottom:12px"><input id="rSearch" placeholder="חיפוש לפי לקוח, אתר, או מס׳ מכשיר..." value="${esc(state._rsearch||'')}" style="padding:10px 14px;border-radius:12px"></div>
+    <div id="rList"></div>`;
+  const inp=document.getElementById('rSearch');
+  inp.oninput=()=>{ state._rsearch=inp.value; drawRentalList(); };
+  function drawRentalList(){
+    const q=(state._rsearch||'').trim();
+    const list=state.rentals.filter(r=>!q || (r.customer_name||'').includes(q) || (r.site||'').includes(q) || (r.motors||[]).some(m=>(m.device_num||'').includes(q)));
+    const el=document.getElementById('rList');
+    if(!list.length){ el.innerHTML=`<div class="center"><div style="font-size:32px">📋</div><div>אין השכרות</div><div style="font-size:12px">לחץ "+ חדש"</div></div>`; return; }
+    el.innerHTML = list.map(r=>{
+      const m=motorCount(r), tot=rentalTotal(r);
+      return `<div class="listitem" data-id="${r.id}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div>
+            <div style="font-weight:500;margin-bottom:3px">${esc(r.customer_name||'לקוח חדש')}${r.site?' — '+esc(r.site):''}</div>
+            <div style="font-size:11px;color:var(--text3);display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+              ${r.rental_num?`<span class="mono">${esc(r.rental_num)}</span>`:''}<span>${fmtD(r.date)}</span>
+              ${m?`<span class="badge b-orange">${m} מנועים</span>`:''}
+              ${r.start_signature?`<span class="badge b-teal">התחלה✓</span>`:''}
+              ${r.end_signature?`<span class="badge b-blue">סיום✓</span>`:''}
+            </div>
+          </div>
+          <div class="row" style="align-items:center;flex-shrink:0">
+            <span class="badge ${r.status==='active'?'b-teal':r.status==='cancelled'?'b-red':'b-gray'}">${r.status==='active'?'פעיל':r.status==='cancelled'?'בוטל':'הושלם'}</span>
+            ${tot>0?`<span class="badge b-amber">₪${Math.round(tot).toLocaleString()}</span>`:''}
+            ${isMgr?`<button class="btn-ghost" data-del="${r.id}" style="padding:4px 9px">🗑</button>`:''}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    el.querySelectorAll('[data-id]').forEach(d=>d.onclick=ev=>{
+      if(ev.target.closest('[data-del]')) return;
+      state.current=state.rentals.find(x=>x.id===d.dataset.id); state.view='edit'; state.tab='start'; render();
+    });
+    el.querySelectorAll('[data-del]').forEach(b=>b.onclick=async ev=>{
+      ev.stopPropagation();
+      if(!confirm('למחוק את ההשכרה לצמיתות?')) return;
+      await sb.from('rentals').delete().eq('id',b.dataset.del);
+      await loadData(); drawRentalList(); toast('נמחק');
+    });
+  }
+  drawRentalList();
+  if(state.rentals.length) mc.insertAdjacentHTML('beforeend',
+    `<div style="margin-top:14px;padding:10px 14px;border-radius:12px;background:var(--bluebg);border:1px solid #85B7EB;font-size:12px;color:var(--blue);display:flex;justify-content:space-between">
+      <span>פעילות: ${activeCount}</span><span>סה״כ הכנסות: ₪${Math.round(totalRev).toLocaleString()}</span></div>`);
+}
+
+// ─── New rental ───
+async function newRental(){
+  const { data, error } = await sb.from('rentals').insert({
+    date:today(), start_date:today(), status:'active',
+    created_by:state.user.id, assigned_to:state.user.id,
+    start_checklist:CK_START.map(l=>({label:l,checked:false})),
+    end_checklist:CK_END.map(l=>({label:l,checked:false})),
+    end_condition:CONDITIONS[0], scaffold_type:'פיגום תלוי', discount:0,
+  }).select('*, rental_lines(*), motors(*)').single();
+  if(error){ toast('שגיאה: '+error.message); return; }
+  await sb.from('motors').insert([
+    { rental_id:data.id, pair_index:0, motor_position:1, sku:'4501', start_date:today() },
+    { rental_id:data.id, pair_index:0, motor_position:2, sku:'4501', start_date:today() },
+  ]);
+  await loadData();
+  state.current=state.rentals.find(x=>x.id===data.id); state.view='edit'; state.tab='start'; render();
+}
+
+async function saveRentalField(field,value){
+  state.current[field]=value;
+  await sb.from('rentals').update({ [field]:value }).eq('id',state.current.id);
+  const idx=state.rentals.findIndex(x=>x.id===state.current.id);
+  if(idx>=0) state.rentals[idx][field]=value;
+}
+function refreshCurrent(){ state.current=state.rentals.find(x=>x.id===state.current.id); }
+
+function pairsOf(r){
+  const motors=(r.motors||[]).filter(m=>m.unit_kind!=='lift').slice().sort((a,b)=>(a.pair_index-b.pair_index)||(a.motor_position-b.motor_position));
+  const pairs={}; motors.forEach(m=>{ (pairs[m.pair_index]=pairs[m.pair_index]||[]).push(m); });
+  return pairs;
+}
+function liftUnits(r){ return (r.motors||[]).filter(m=>m.unit_kind==='lift').slice().sort((a,b)=>a.pair_index-b.pair_index); }
+const LIFT_LABEL = m => (m.sku||'במה');
+
+// ─── Edit rental ───
+function renderEdit(){
+  const r=state.current;
+  app.innerHTML=`
+    <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:14px">
+      <button class="btn-ghost" id="backBtn" style="padding:8px 14px">→ חזרה</button>
+      <div class="row" style="align-items:center">
+        <button class="btn-teal" id="expBtn" style="padding:8px 14px;font-size:13px">📊 ייצוא Priority</button>
+        <span class="badge ${r.status==='active'?'b-teal':r.status==='cancelled'?'b-red':'b-gray'}">${r.status==='active'?'פעיל':r.status==='cancelled'?'בוטל':'הושלם'}</span>
+        ${rentalTotal(r)>0?`<span class="badge b-purple">₪${Math.round(rentalTotal(r)).toLocaleString()}</span>`:''}
+      </div>
+    </div>
+    <div class="hdr">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div style="font-size:18px;font-weight:600;letter-spacing:1px">SEALTEAM</div>
+        <div style="font-size:11px;opacity:.6">השכרת פיגומים</div>
+        <div style="margin-right:auto"><select class="glass" data-f="status" style="width:auto;padding:4px 8px;font-size:11px">
+          ${['active','completed','cancelled'].map(s=>`<option value="${s}" ${r.status===s?'selected':''} style="color:#000">${s==='active'?'פעיל':s==='completed'?'הושלם':'בוטל'}</option>`).join('')}
+        </select></div>
+      </div>
+      <div class="grid2">
+        <div><label class="glass-label">שם לקוח</label><input class="glass" data-f="customer_name" value="${esc(r.customer_name)}" placeholder="שם..."></div>
+        <div><label class="glass-label">טלפון</label><input class="glass" data-f="customer_phone" value="${esc(r.customer_phone)}" placeholder="054-"></div>
+        <div><label class="glass-label">עיר / כתובת לקוח</label><input class="glass" data-f="customer_city" value="${esc(r.customer_city)}" placeholder="עיר..."></div>
+        <div><label class="glass-label">ח.פ / ע.מ</label><input class="glass" data-f="customer_tax_id" value="${esc(r.customer_tax_id)}" placeholder="516..."></div>
+        <div><label class="glass-label">אתר</label><input class="glass" data-f="site" value="${esc(r.site)}" placeholder="שם אתר..."></div>
+        <div><label class="glass-label">כתובת אתר</label><input class="glass" data-f="site_address" value="${esc(r.site_address)}" placeholder="כתובת..."></div>
+      </div>
+      <div class="grid3" style="margin-top:8px">
+        <div><label class="glass-label">מס׳ השכרה</label><input class="glass mono" data-f="rental_num" value="${esc(r.rental_num)}" placeholder="RN-"></div>
+        <div><label class="glass-label">קומות / גובה</label><input class="glass" data-f="floors" value="${esc(r.floors)}" placeholder="מס׳ קומות"></div>
+        <div><label class="glass-label">תאריך</label><input class="glass" type="date" data-f="date" value="${r.date||''}"></div>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab ${state.tab==='start'?'active':''}" data-t="start">תחילת השכרה</button>
+      <button class="tab ${state.tab==='lines'?'active':''}" data-t="lines">פריטים ומנועים</button>
+      <button class="tab ${state.tab==='end'?'active':''}" data-t="end">סיום השכרה</button>
+    </div>
+    <div id="tabContent"></div>`;
+  document.getElementById('backBtn').onclick=async()=>{ await loadData(); state.view='list'; state.current=null; render(); };
+  document.getElementById('expBtn').onclick=()=>exportPriority(state.current);
+  app.querySelectorAll('.hdr [data-f]').forEach(i=>i.onchange=()=>saveRentalField(i.dataset.f, i.value).then(()=>{ if(i.dataset.f==='status') renderEdit(); }));
+  app.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{ state.tab=b.dataset.t; renderEdit(); });
+  const tc=document.getElementById('tabContent');
+  if(state.tab==='start') renderTabStart(tc);
+  else if(state.tab==='lines') renderTabLines(tc);
+  else renderTabEnd(tc);
+}
+
+// ─── TAB: START ───
+function renderTabStart(tc){
+  const r=state.current, pairs=pairsOf(r), lifts=liftUnits(r);
+  const scanned=(r.motors||[]).filter(m=>m.unit_kind!=='lift'&&m.device_num).length;
+  tc.innerHTML=`
+    <div class="card" style="border:1.5px solid var(--tealbd)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-weight:500">⚡ סריקת מנועים — תחילת השכרה</span>
+        ${scanned?`<span class="badge b-teal">${scanned} נסרקו</span>`:''}
+      </div>
+      ${Object.entries(pairs).map(([pi,ms])=>{
+        const done=ms.length===2&&ms.every(m=>m.device_num);
+        return `<div style="background:var(--card2);border-radius:10px;padding:12px;margin-bottom:8px;border:1px solid ${done?'var(--tealbd)':'var(--border)'}">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div class="row" style="align-items:center"><span style="font-size:13px;font-weight:600">זוג #${parseInt(pi)+1}</span><span class="badge b-orange">מק״ט 4501</span>${done?'<span class="badge b-teal">✓ זוג שלם</span>':''}</div>
+            ${Object.keys(pairs).length>1?`<button class="btn-ghost" data-rempair="${pi}" style="padding:3px 8px">🗑</button>`:''}
+          </div>
+          <div class="grid2">
+            ${ms.map((m,mi)=>`
+              <div style="background:var(--card);border-radius:8px;padding:9px;border:1px solid ${m.device_num?'var(--tealbd)':'var(--border)'}">
+                <div style="font-size:11px;font-weight:600;color:${m.device_num?'var(--teal)':'var(--text2)'};margin-bottom:5px">מנוע ${mi+1} ${m.device_num?'✓':''}</div>
+                <div class="row" style="gap:4px">
+                  <input class="mono" data-motor="${m.id}" data-mf="device_num" value="${esc(m.device_num)}" placeholder="מס׳ מכשיר" style="flex:1">
+                  <button class="btn-ghost" style="width:40px;padding:0" data-scan="${m.id}">📷</button>
+                </div>
+                ${m.device_num&&m.start_date?`<div style="font-size:11px;color:var(--text3);margin-top:4px">ת. התחלה: ${fmtD(m.start_date)}</div>`:''}
+              </div>`).join('')}
+          </div>
+        </div>`;
+      }).join('')}
+      <button class="btn-ghost" style="width:100%" id="addPair">+ הוסף זוג מנועים</button>
+    </div>
+
+    <div class="card" style="border:1.5px solid #F0A06A">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-weight:500">🏗️ במות הרמה — מספר סידורי</span>
+        ${lifts.length?`<span class="badge b-orange">${lifts.filter(m=>m.device_num).length}/${lifts.length}</span>`:''}
+      </div>
+      ${lifts.map(m=>`
+        <div style="background:var(--card2);border-radius:10px;padding:12px;margin-bottom:8px;border:1px solid ${m.device_num?'var(--tealbd)':'var(--border)'}">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <select data-liftmodel="${m.id}" style="width:auto;padding:5px 8px;font-size:13px;font-weight:600">
+              ${LIFTS.map(l=>`<option value="${l.sku}" ${m.sku===l.sku?'selected':''}>${l.sku} · ${l.wh}</option>`).join('')}
+            </select>
+            <button class="btn-ghost" data-remlift="${m.id}" style="padding:3px 8px">🗑</button>
+          </div>
+          <label>מספר סידורי / ברקוד</label>
+          <div class="row" style="gap:4px">
+            <input class="mono" data-motor="${m.id}" data-mf="device_num" value="${esc(m.device_num)}" placeholder="מס׳ סידורי" style="flex:1">
+            <button class="btn-ghost" style="width:40px;padding:0" data-scan="${m.id}">📷</button>
+          </div>
+          ${m.device_num&&m.start_date?`<div style="font-size:11px;color:var(--text3);margin-top:4px">ת. התחלה: ${fmtD(m.start_date)}</div>`:''}
+        </div>`).join('')}
+      <button class="btn-ghost" style="width:100%" id="addLift">+ הוסף במת הרמה</button>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:500;margin-bottom:10px">✅ צ׳קליסט התקנה</div>
+      <div class="grid2" id="ckStart">${(r.start_checklist||[]).map((c,i)=>`<label class="chk ${c.checked?'on':''}"><input type="checkbox" data-ck="start" data-cki="${i}" ${c.checked?'checked':''}><span>${esc(c.label)}</span></label>`).join('')}</div>
+      <div style="margin-top:6px;font-size:12px;color:var(--text3)">${(r.start_checklist||[]).filter(c=>c.checked).length}/${(r.start_checklist||[]).length}</div>
+    </div>
+
+    ${photosCard('start','צילום מצב — התקנה')}
+
+    <div class="card">
+      <div class="grid3" style="margin-bottom:10px">
+        <div><label>תאריך</label><input type="date" data-f="start_date" value="${r.start_date||''}"></div>
+        <div><label>שעה</label><input type="time" data-f="start_time" value="${esc(r.start_time)}"></div>
+        <div><label>טכנאי</label><input data-f="start_tech" value="${esc(r.start_tech)}" placeholder="שם מלא..."></div>
+      </div>
+      <label>הערות התקנה</label><textarea data-f="start_notes" rows="2" placeholder="הערות...">${esc(r.start_notes)}</textarea>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-weight:500">✍️ חתימת לקוח — קבלת ציוד</span>${r.start_signature?'<span class="badge b-teal">חתום ✓</span>':''}
+      </div>
+      <canvas class="sig" data-sig="start_signature"></canvas>
+      <button class="btn-ghost" data-sigclear="start_signature" style="margin-top:6px;padding:5px 12px;font-size:12px">נקה חתימה</button>
+    </div>
+
+    ${shareSignCard()}`;
+
+  bindFields(tc);
+  bindChecklists(tc);
+  tc.querySelectorAll('[data-motor]').forEach(i=>i.onchange=async()=>{
+    await sb.from('motors').update({ [i.dataset.mf]:i.value }).eq('id',i.dataset.motor);
+    await loadData(); refreshCurrent();
+  });
+  tc.querySelectorAll('[data-scan]').forEach(b=>b.onclick=()=>openScanner(async code=>{
+    await sb.from('motors').update({ device_num:code, start_date:r.start_date||today(), scan_timestamp:new Date().toISOString() }).eq('id',b.dataset.scan);
+    if(!r.start_date) await saveRentalField('start_date',today());
+    if(!r.start_time) await saveRentalField('start_time',nowTime());
+    await loadData(); refreshCurrent(); renderEdit(); toast('נסרק: '+code);
+  }));
+  const nextIdx=()=>Math.max(...(r.motors||[]).map(m=>m.pair_index||0),-1)+1;
+  document.getElementById('addPair').onclick=async()=>{
+    const pi=nextIdx();
+    await sb.from('motors').insert([
+      {rental_id:r.id,unit_kind:'motor',pair_index:pi,motor_position:1,sku:'4501',start_date:today()},
+      {rental_id:r.id,unit_kind:'motor',pair_index:pi,motor_position:2,sku:'4501',start_date:today()}]);
+    await loadData(); refreshCurrent(); renderEdit();
+  };
+  tc.querySelectorAll('[data-rempair]').forEach(b=>b.onclick=async()=>{
+    const pi=b.dataset.rempair;
+    const ids=(r.motors||[]).filter(m=>m.unit_kind!=='lift'&&String(m.pair_index)===String(pi)).map(m=>m.id);
+    await sb.from('motors').delete().in('id',ids);
+    await loadData(); refreshCurrent(); renderEdit();
+  });
+  const al=document.getElementById('addLift'); if(al) al.onclick=async()=>{
+    await sb.from('motors').insert({rental_id:r.id,unit_kind:'lift',sku:LIFTS[0].sku,pair_index:nextIdx(),motor_position:1,start_date:today()});
+    await loadData(); refreshCurrent(); renderEdit();
+  };
+  tc.querySelectorAll('[data-remlift]').forEach(b=>b.onclick=async()=>{
+    await sb.from('motors').delete().eq('id',b.dataset.remlift);
+    await loadData(); refreshCurrent(); renderEdit();
+  });
+  tc.querySelectorAll('[data-liftmodel]').forEach(s=>s.onchange=async()=>{
+    await sb.from('motors').update({sku:s.value}).eq('id',s.dataset.liftmodel);
+    await loadData(); refreshCurrent();
+  });
+  bindPhotos(tc); bindShare(tc);
+  attachSignatures(tc);
+}
+
+// ─── TAB: LINES ───
+function renderTabLines(tc){
+  const r=state.current;
+  const lines=r.rental_lines||[];
+  const pairs=pairsOf(r);
+  const hasMotors=(r.motors||[]).some(m=>m.device_num);
+  tc.innerHTML=`
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-weight:500">📋 שורות שירות</span>
+        ${rentalTotal(r)>0?`<span class="badge b-purple">₪${Math.round(rentalTotal(r)).toLocaleString()}</span>`:''}
+      </div>
+      ${lines.map(l=>{
+        const isRange=l.billing_mode==='range';
+        const priceTitle = l.billing_mode==='day'?'מחיר ליום':l.billing_mode==='month'?'מחיר לחודש':l.billing_mode==='range'?'מחיר ליום':'מחיר';
+        return `<div style="margin-bottom:5px;border-radius:8px;background:${parseFloat(l.qty)>0?'var(--success-bg)':'var(--card2)'};border:1px solid var(--border);padding:6px">
+          <div class="row" style="align-items:center">
+            <span class="mono" style="font-size:12px;color:var(--text2);min-width:42px">${esc(l.sku)}</span>
+            <span style="flex:1;font-size:13px;min-width:80px">${esc(l.description)}</span>
+            <input type="number" data-line="${l.id}" data-lf="qty" value="${l.qty}" style="width:52px;padding:4px;text-align:center" title="כמות / ימים / חודשים">
+            <input type="number" data-line="${l.id}" data-lf="price" value="${l.price}" style="width:74px;padding:4px;text-align:center;font-weight:600" title="${priceTitle}">
+            <button class="btn-ghost" data-delline="${l.id}" style="padding:4px 8px">×</button>
+          </div>
+          <div class="row" style="align-items:center;gap:4px;margin-top:5px">
+            <select data-line="${l.id}" data-lf="billing_mode" style="width:auto;padding:3px 6px;font-size:11px">
+              <option value="" ${!l.billing_mode?'selected':''}>חיוב: ידני</option>
+              <option value="day" ${l.billing_mode==='day'?'selected':''}>לפי יום</option>
+              <option value="month" ${l.billing_mode==='month'?'selected':''}>לפי חודש</option>
+              <option value="range" ${l.billing_mode==='range'?'selected':''}>לפי תאריכים</option>
+            </select>
+            ${isRange?`<input type="date" data-line="${l.id}" data-lf="start_date" value="${l.start_date||''}" style="width:auto;padding:3px 6px;font-size:11px" title="מתאריך">
+            <input type="date" data-line="${l.id}" data-lf="end_date" value="${l.end_date||''}" style="width:auto;padding:3px 6px;font-size:11px" title="עד תאריך">
+            <span class="badge b-blue">${calcDays(l.start_date,l.end_date)||0} ימים</span>`
+            : l.billing_mode?`<span style="font-size:11px;color:var(--text3)">${l.billing_mode==='day'?'ימים × מחיר יומי':'חודשים × מחיר חודשי'}</span>`:''}
+            <span style="margin-right:auto;font-size:12px;font-weight:600">₪${Math.round((parseFloat(l.qty)||0)*(parseFloat(l.price)||0)).toLocaleString()}</span>
+          </div>
+        </div>`;
+      }).join('')}
+      <label style="margin-top:8px">הוסף שורה מהמחירון</label>
+      <div class="row">
+        ${state.catalog.filter(c=>!c.is_motor).map(c=>`<button class="btn-ghost" data-add="${c.id}" style="padding:5px 10px;font-size:12px">${esc(c.sku)} ${esc((c.description||'').slice(0,14))}</button>`).join('')||'<span style="font-size:12px;color:var(--text3)">אין פריטים במחירון</span>'}
+      </div>
+      <div class="row" style="align-items:center;margin-top:12px;padding:8px;background:var(--card2);border-radius:8px">
+        <span style="font-size:13px;color:var(--text2)">הנחה</span>
+        <input type="number" data-f="discount" value="${r.discount||0}" style="width:60px;text-align:center" min="0" max="100"><span>%</span>
+        ${r.discount>0?`<span class="badge b-amber">-${r.discount}%</span>`:''}
+        <span style="margin-right:auto" class="badge b-purple">סה״כ ₪${Math.round(rentalTotal(r)).toLocaleString()}</span>
+      </div>
+    </div>
+
+    ${hasMotors?`<div class="card" style="background:var(--card2)">
+      <div style="font-weight:500;margin-bottom:8px">⚡ יחידות במעקב (נסרקו בתחילה/סיום)</div>
+      ${(r.motors||[]).filter(m=>m.device_num).map(m=>{
+        const hasEnd=!!m.end_date, lift=m.unit_kind==='lift';
+        return `<div class="row" style="align-items:center;padding:6px 8px;border-radius:6px;margin-bottom:3px;background:var(--card);border:1px solid var(--border)">
+          <span class="badge ${lift?'b-orange':'b-gray'}" style="min-width:52px">${lift?'🏗️ במה':'⚡ 4501'}</span>
+          <span class="mono" style="font-size:12px;flex:1">${esc(lift?m.sku+' · '+m.device_num:m.device_num)}</span>
+          <span style="font-size:11px;color:var(--text3)">${fmtD(m.start_date)}${hasEnd?' → '+fmtD(m.end_date):''}</span>
+          <span class="badge ${hasEnd?'b-teal':'b-amber'}">${hasEnd?'הוחזר':'בשטח'}</span>
+        </div>`;
+      }).join('')}
+    </div>`:''}`;
+
+  bindFields(tc,true);
+  tc.querySelectorAll('[data-line]').forEach(i=>i.onchange=async()=>{
+    const f=i.dataset.lf, id=i.dataset.line;
+    const ln=(r.rental_lines||[]).find(x=>x.id===id)||{};
+    const numeric=(f==='qty'||f==='price');
+    const patch={ [f]: numeric?(parseFloat(i.value)||0):i.value };
+    if((f==='start_date'||f==='end_date') && ln.billing_mode==='range'){
+      const s=f==='start_date'?i.value:ln.start_date, e=f==='end_date'?i.value:ln.end_date;
+      if(s){ const d=calcDays(s,e)||0; patch.qty=d; patch.rental_days=d; }
+    }
+    if(f==='billing_mode'){
+      patch.unit = i.value==='day'?'יום':i.value==='month'?'חודש':i.value==='range'?'יום':(ln.unit||'יח׳');
+      if(i.value==='range' && ln.start_date){ const d=calcDays(ln.start_date,ln.end_date)||0; patch.qty=d; patch.rental_days=d; }
+    }
+    await sb.from('rental_lines').update(patch).eq('id',id);
+    await loadData(); refreshCurrent(); renderEdit();
+  });
+  tc.querySelectorAll('[data-add]').forEach(b=>b.onclick=async()=>{
+    const c=state.catalog.find(x=>x.id===b.dataset.add);
+    await sb.from('rental_lines').insert({ rental_id:r.id, sku:c.sku, description:c.description, unit:c.unit, qty:1, price:c.price });
+    await loadData(); refreshCurrent(); renderEdit();
+  });
+  tc.querySelectorAll('[data-delline]').forEach(b=>b.onclick=async()=>{
+    await sb.from('rental_lines').delete().eq('id',b.dataset.delline);
+    await loadData(); refreshCurrent(); renderEdit();
+  });
+}
+
+// ─── TAB: END ───
+function unitReturnCard(m, label){
+  const hasStart=!!m.device_num, hasEnd=!!m.end_date, cond=m.condition||'', ci=MOTOR_CONDITIONS.find(c=>c.id===cond), isFault=cond&&cond!=='ok';
+  const bd=isFault?'#F09595':hasEnd?'var(--tealbd)':hasStart?'#EF9F27':'var(--border)';
+  return `<div style="background:var(--card);border-radius:8px;padding:9px;border:1px solid ${bd}">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+      <span style="font-size:11px;font-weight:600;color:var(--text2)">${esc(label)}</span>
+      ${hasEnd?(ci?`<span class="badge ${ci.bd}">${ci.icon} ${ci.label}</span>`:'<span class="badge b-teal">הוחזר ✓</span>'):hasStart?'<span class="badge b-amber">בשטח</span>':'<span class="badge b-gray">לא נסרק</span>'}
+    </div>
+    ${hasStart?`<div class="mono" style="font-size:12px;padding:3px 6px;background:var(--card2);border-radius:5px;margin-bottom:4px">${esc(m.device_num)}</div>`:''}
+    ${hasStart?`<div style="font-size:11px;color:var(--text3);margin-bottom:5px">יצא: ${fmtD(m.start_date)}${hasEnd?' → חזר: '+fmtD(m.end_date):''}</div>`:''}
+    ${hasStart&&!hasEnd?`
+      <button class="btn-ghost" style="width:100%;padding:6px;font-size:12px;margin-bottom:5px" data-endscan="${m.id}" data-expect="${esc(m.device_num)}">📷 סרוק לאימות החזרה</button>
+      <div class="row" style="gap:4px">
+        <button class="pill" data-manret="${m.id}" data-rc="ok" style="flex:1;justify-content:center;background:var(--tealbg);color:var(--teal);border-color:var(--tealbd)">✓ הוחזר תקין</button>
+        <button class="pill" data-manret="${m.id}" data-rc="fault" style="flex:1;justify-content:center;background:var(--redbg);color:var(--red);border-color:#F09595">🔴 הוחזר עם תקלה</button>
+      </div>`:''}
+    ${hasStart&&!hasEnd?`<div style="font-size:10px;color:var(--text3);margin-top:4px;text-align:center">סרוק לאימות, או סמן ידנית כשאין ברקוד</div>`:''}
+    ${m.end_barcode?(m.return_verified?'<div style="margin-top:4px"><span class="badge b-teal">✓ ברקוד תואם</span></div>':`<div style="margin-top:4px"><span class="badge b-red">✕ ברקוד שונה: ${esc(m.end_barcode)}</span></div>`):''}
+    ${hasEnd?`<div style="margin-top:8px;padding:8px;border-radius:8px;background:var(--card2);border:1px solid var(--border)">
+      <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px">מצב היחידה</div>
+      <div class="row" style="gap:4px">
+        ${MOTOR_CONDITIONS.map(c=>`<button class="pill ${cond===c.id?'on':''}" data-cond="${m.id}" data-cv="${c.id}" style="padding:3px 8px;font-size:10px">${c.icon} ${c.label}</button>`).join('')}
+      </div>
+      ${isFault?`<div style="margin-top:6px">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:4px">תקלות נפוצות (לחץ לבחירה):</div>
+        <div class="row" style="gap:3px;margin-bottom:6px">
+          ${COMMON_FAULTS.map(f=>{const sel=(m.fault_description||'').split(' + ').includes(f);return `<button class="pill ${sel?'on':''}" data-fault-tag="${m.id}" data-fv="${esc(f)}" style="padding:3px 7px;font-size:9px;${sel?'background:var(--redbg);color:var(--red);border-color:#F09595':''}">${sel?'✓ ':''}${esc(f)}</button>`;}).join('')}
+        </div>
+        <input data-fault="${m.id}" value="${esc(m.fault_description)}" placeholder="או כתוב תקלה אחרת..." style="padding:6px 8px;font-size:12px;border-color:#F09595">
+      </div>`:''}
+    </div>`:''}
+  </div>`;
+}
+
+function renderTabEnd(tc){
+  const r=state.current, pairs=pairsOf(r), lifts=liftUnits(r);
+  const motorU=(r.motors||[]).filter(m=>m.unit_kind!=='lift'&&m.device_num), mRet=motorU.filter(m=>m.end_date).length;
+  const liftDev=lifts.filter(m=>m.device_num), lRet=liftDev.filter(m=>m.end_date).length;
+  tc.innerHTML=`
+    <div class="card" style="border:1.5px solid #F09595">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-weight:500">⚡ אימות החזרת מנועים</span>
+        ${motorU.length?`<span class="badge ${mRet===motorU.length?'b-teal':'b-amber'}">${mRet}/${motorU.length} הוחזרו</span>`:''}
+      </div>
+      ${Object.keys(pairs).length?Object.entries(pairs).map(([pi,ms])=>`
+        <div style="background:var(--card2);border-radius:10px;padding:12px;margin-bottom:8px">
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px">זוג #${parseInt(pi)+1}</div>
+          <div class="grid2">${ms.map((m,mi)=>unitReturnCard(m,`מנוע ${mi+1}`)).join('')}</div>
+        </div>`).join(''):'<div style="font-size:12px;color:var(--text3)">אין מנועים בהשכרה זו</div>'}
+    </div>
+
+    ${lifts.length?`<div class="card" style="border:1.5px solid #F0A06A">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-weight:500">🏗️ אימות החזרת במות הרמה</span>
+        ${liftDev.length?`<span class="badge ${lRet===liftDev.length?'b-teal':'b-orange'}">${lRet}/${liftDev.length} הוחזרו</span>`:''}
+      </div>
+      ${lifts.map(m=>`<div style="margin-bottom:8px">${unitReturnCard(m, LIFT_LABEL(m))}</div>`).join('')}
+    </div>`:''}
+
+    ${daysSection(pairs,lifts)}
+
+    <div class="card">
+      <div style="font-weight:500;margin-bottom:10px">✅ צ׳קליסט החזרה</div>
+      <div class="grid2">${(r.end_checklist||[]).map((c,i)=>`<label class="chk ${c.checked?'on':''}"><input type="checkbox" data-ck="end" data-cki="${i}" ${c.checked?'checked':''}><span>${esc(c.label)}</span></label>`).join('')}</div>
+    </div>
+
+    ${photosCard('end','צילום סיום')}
+
+    <div class="card">
+      <div class="grid3" style="margin-bottom:10px">
+        <div><label>תאריך סיום</label><input type="date" data-f="end_date" value="${r.end_date||''}"></div>
+        <div><label>שעה</label><input type="time" data-f="end_time" value="${esc(r.end_time)}"></div>
+        <div><label>טכנאי</label><input data-f="end_tech" value="${esc(r.end_tech)}"></div>
+      </div>
+      <label>מצב ציוד כללי</label>
+      <div class="row" style="margin-bottom:10px">${CONDITIONS.map(o=>`<button class="pill ${r.end_condition===o?'on':''}" data-cond-g="${esc(o)}">${esc(o)}</button>`).join('')}</div>
+      <label>הערות סיום</label><textarea data-f="end_notes" rows="2" placeholder="נזקים, חסרים...">${esc(r.end_notes)}</textarea>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-weight:500">✍️ חתימת לקוח — סיום</span>${r.end_signature?'<span class="badge b-teal">חתום ✓</span>':''}
+      </div>
+      <canvas class="sig" data-sig="end_signature"></canvas>
+      <button class="btn-ghost" data-sigclear="end_signature" style="margin-top:6px;padding:5px 12px;font-size:12px">נקה חתימה</button>
+      <button class="btn-teal" style="width:100%;margin-top:10px" id="completeBtn">סמן השכרה כהושלמה</button>
+    </div>`;
+
+  bindFields(tc);
+  bindChecklists(tc);
+  tc.querySelectorAll('[data-endscan]').forEach(b=>b.onclick=()=>openScanner(async code=>{
+    const match=code===b.dataset.expect;
+    await sb.from('motors').update({ end_date:today(), end_scan_timestamp:new Date().toISOString(), end_barcode:code, return_verified:match, condition:'ok' }).eq('id',b.dataset.endscan);
+    await sb.from('warehouse').upsert({ device_num:b.dataset.expect, status:'available', last_update:new Date().toISOString() });
+    if(!r.end_date) await saveRentalField('end_date',today());
+    if(!r.end_time) await saveRentalField('end_time',nowTime());
+    await loadData(); refreshCurrent(); renderEdit();
+    toast(match?'✓ ברקוד תואם':'⚠️ ברקוד שונה!');
+  }));
+  tc.querySelectorAll('[data-manret]').forEach(b=>b.onclick=()=>returnUnit(b.dataset.manret, b.dataset.rc));
+  tc.querySelectorAll('[data-cond]').forEach(b=>b.onclick=()=>setMotorCondition(b.dataset.cond,b.dataset.cv));
+  tc.querySelectorAll('[data-fault-tag]').forEach(b=>b.onclick=()=>{
+    const m=(r.motors||[]).find(x=>x.id===b.dataset['faultTag']); const f=b.dataset.fv;
+    const cur=(m.fault_description||'').split(' + ').filter(Boolean);
+    const next=cur.includes(f)?cur.filter(x=>x!==f):[...cur,f];
+    setMotorFault(m.id, next.join(' + '));
+  });
+  tc.querySelectorAll('[data-fault]').forEach(i=>i.onchange=()=>setMotorFault(i.dataset.fault,i.value));
+  tc.querySelectorAll('[data-cond-g]').forEach(b=>b.onclick=()=>saveRentalField('end_condition',b.dataset.condG).then(renderEdit));
+  document.getElementById('completeBtn').onclick=async()=>{
+    await saveRentalField('status','completed'); await loadData();
+    state.view='list'; state.current=null; render(); toast('ההשכרה הושלמה ✓');
+  };
+  bindPhotos(tc);
+  attachSignatures(tc);
+}
+
+async function setMotorCondition(motorId,cv){
+  const r=state.current, m=(r.motors||[]).find(x=>x.id===motorId);
+  const c=MOTOR_CONDITIONS.find(x=>x.id===cv);
+  await sb.from('motors').update({ condition:cv }).eq('id',motorId);
+  if(m.device_num){
+    const wh={ device_num:m.device_num, status:c.wh, last_update:new Date().toISOString() };
+    if(cv!=='ok') wh.notes=m.fault_description||c.label;
+    await sb.from('warehouse').upsert(wh);
+  }
+  await loadData(); refreshCurrent(); renderEdit();
+}
+async function returnUnit(motorId, cond){
+  const r=state.current, m=(r.motors||[]).find(x=>x.id===motorId);
+  const c=MOTOR_CONDITIONS.find(x=>x.id===cond)||MOTOR_CONDITIONS[0];
+  await sb.from('motors').update({ end_date:today(), end_scan_timestamp:new Date().toISOString(), condition:cond }).eq('id',motorId);
+  if(m.device_num){
+    const wh={ device_num:m.device_num, status:c.wh, last_update:new Date().toISOString() };
+    if(cond!=='ok') wh.notes=m.fault_description||c.label;
+    await sb.from('warehouse').upsert(wh);
+  }
+  if(!r.end_date) await saveRentalField('end_date',today());
+  if(!r.end_time) await saveRentalField('end_time',nowTime());
+  await loadData(); refreshCurrent(); renderEdit();
+  toast(cond==='ok'?'הוחזר ונכנס למחסן ✓':'הוחזר — נכנס למחסן לתיקון 🔧');
+}
+async function setMotorFault(motorId,desc){
+  const r=state.current, m=(r.motors||[]).find(x=>x.id===motorId);
+  await sb.from('motors').update({ fault_description:desc }).eq('id',motorId);
+  if(m.device_num) await sb.from('warehouse').upsert({ device_num:m.device_num, status:'repair', notes:desc, last_update:new Date().toISOString() });
+  await loadData(); refreshCurrent(); renderEdit();
+}
+
+function daysRow(label,days,est){
+  return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--card);border-radius:8px;margin-bottom:5px">
+    <span style="font-size:12px">${label}</span>
+    <span class="badge ${est?'b-amber':'b-teal'}">${days} ימים${est?' (עד היום)':''}</span></div>`;
+}
+function daysSection(pairs,lifts){
+  const pEntries=Object.entries(pairs).filter(([_,ms])=>ms.some(m=>m.start_date&&m.device_num));
+  const lUnits=(lifts||[]).filter(m=>m.start_date&&m.device_num);
+  if(!pEntries.length && !lUnits.length) return '';
+  let grand=0;
+  const pRows=pEntries.map(([pi,ms])=>{
+    const withDev=ms.filter(m=>m.device_num);
+    const days=Math.max(...withDev.map(m=>calcDays(m.start_date,m.end_date)||0),0);
+    grand+=days;
+    return daysRow(`זוג מנועים #${parseInt(pi)+1}`, days, withDev.some(m=>!m.end_date));
+  }).join('');
+  const lRows=lUnits.map(m=>{
+    const days=calcDays(m.start_date,m.end_date)||0; grand+=days;
+    return daysRow(`🏗️ ${esc(LIFT_LABEL(m))} · ${esc(m.device_num)}`, days, !m.end_date);
+  }).join('');
+  const count=pEntries.length+lUnits.length;
+  const totalLine=count>1?`<div style="display:flex;justify-content:flex-end;gap:8px;align-items:center;margin-top:4px;padding:8px 12px;border-radius:10px;background:linear-gradient(135deg,#1a1a2e,#0f3460);color:#fff"><span style="font-size:13px">סה״כ כל היחידות:</span><span style="font-size:20px;font-weight:700">${grand}</span><span style="font-size:11px;opacity:.7">ימי עבודה</span></div>`:'';
+  return `<div class="card" style="background:var(--card2)"><div style="font-weight:600;font-size:13px;margin-bottom:8px">📊 סה״כ ימי עבודה</div>${pRows}${lRows}${totalLine}</div>`;
+}
+
+// ─── Shared bindings ───
+function bindFields(tc,reRenderOnSave){
+  tc.querySelectorAll('[data-f]').forEach(i=>i.onchange=()=>{
+    const v = i.dataset.f==='discount' ? (parseFloat(i.value)||0) : i.value;
+    saveRentalField(i.dataset.f,v).then(()=>{ if(reRenderOnSave) renderEdit(); });
+  });
+}
+function bindChecklists(tc){
+  tc.querySelectorAll('[data-ck]').forEach(cb=>cb.onchange=async()=>{
+    const field=cb.dataset.ck==='start'?'start_checklist':'end_checklist';
+    const list=JSON.parse(JSON.stringify(state.current[field]||[]));
+    list[+cb.dataset.cki].checked=cb.checked;
+    await saveRentalField(field,list); renderEdit();
+  });
+}
+
+// ─── Photos (צילום מצב) ───
+function photosCard(phase, title){
+  const r=state.current;
+  const photos=(r.rental_photos||[]).filter(p=>(p.phase||'start')===phase);
+  return `<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-weight:500">📸 ${title}</span>
+      ${photos.length?`<span class="badge b-teal">${photos.length} תמונות</span>`:''}
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px">
+      ${photos.map(p=>`<div style="position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;border:1px solid var(--border)">
+        <a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" style="width:100%;height:100%;object-fit:cover" loading="lazy"></a>
+        <button data-delphoto="${p.id}" title="הסר" style="position:absolute;top:3px;inset-inline-start:3px;background:rgba(163,45,45,.92);color:#fff;border:none;border-radius:50%;width:22px;height:22px;padding:0;font-size:14px;line-height:1">×</button>
+      </div>`).join('')}
+      <button class="btn-ghost" data-addphoto="${phase}" style="aspect-ratio:1;flex-direction:column;gap:2px;border-style:dashed"><div style="font-size:24px">＋</div><div style="font-size:11px">הוסף תמונה</div></button>
+    </div>
+  </div>`;
+}
+function bindPhotos(tc){
+  tc.querySelectorAll('[data-addphoto]').forEach(b=>b.onclick=()=>{
+    const phase=b.dataset.addphoto;
+    const inp=document.createElement('input');
+    inp.type='file'; inp.accept='image/*'; inp.setAttribute('capture','environment'); inp.multiple=true;
+    inp.onchange=async()=>{
+      if(!inp.files.length) return;
+      toast('מעלה תמונות...'); let ok=0;
+      for(const f of inp.files){ if(await uploadPhoto(f,phase)) ok++; }
+      await loadData(); refreshCurrent(); renderEdit();
+      if(ok) toast(ok+' תמונות נוספו ✓');
+    };
+    inp.click();
+  });
+  tc.querySelectorAll('[data-delphoto]').forEach(b=>b.onclick=async()=>{
+    const p=(state.current.rental_photos||[]).find(x=>x.id===b.dataset.delphoto);
+    if(!p) return;
+    if(!confirm('להסיר את התמונה?')) return;
+    if(p.path) await sb.storage.from('rental-photos').remove([p.path]);
+    await sb.from('rental_photos').delete().eq('id',p.id);
+    await loadData(); refreshCurrent(); renderEdit(); toast('התמונה הוסרה');
+  });
+}
+async function uploadPhoto(file, phase){
+  const r=state.current;
+  const ext=((file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,''))||'jpg';
+  const path=`${r.id}/${phase}_${Date.now()}_${Math.random().toString(36).slice(2,6)}.${ext}`;
+  const up=await sb.storage.from('rental-photos').upload(path, file, { contentType:file.type||'image/jpeg' });
+  if(up.error){ toast('שגיאת העלאה: '+up.error.message); return false; }
+  const { data:{ publicUrl } } = sb.storage.from('rental-photos').getPublicUrl(path);
+  const ins=await sb.from('rental_photos').insert({ rental_id:r.id, url:publicUrl, path, phase, created_by:state.user.id });
+  if(ins.error){ toast('שגיאה: '+ins.error.message); return false; }
+  return true;
+}
+
+// ─── Remote customer signing ───
+function signUrl(r){ try{ return new URL('sign.html', location.href).href + '?token=' + (r.sign_token||''); }catch{ return 'sign.html?token='+(r.sign_token||''); } }
+function shareSignCard(){
+  const r=state.current; const signed=!!r.customer_signed_at;
+  return `<div class="card" style="border:1.5px solid #85B7EB">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <span style="font-weight:500">📲 שליחה ללקוח לחתימה דיגיטלית</span>
+      ${signed?`<span class="badge b-teal">נחתם ${fmtD(r.customer_signed_at)}</span>`:'<span class="badge b-gray">טרם נחתם</span>'}
+    </div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:8px">הלקוח יקבל קישור עם התמונות והפרטים ויחתום מהטלפון. החתימה תישמר אוטומטית כאן.</div>
+    <div class="row">
+      <button class="btn-teal" data-share="wa" style="background:#25D366">📱 וואטסאפ</button>
+      <button class="btn-ghost" data-share="sms">SMS</button>
+      <button class="btn-ghost" data-share="mail">מייל</button>
+      <button class="btn-ghost" data-share="copy">העתק קישור</button>
+    </div>
+  </div>`;
+}
+function bindShare(tc){
+  const r=state.current; const url=signUrl(r);
+  const msg=`שלום${r.customer_name?' '+r.customer_name:''}, מצורף קישור לצפייה בתמונות וחתימה על טופס ההשכרה של סייל-טים: ${url}`;
+  tc.querySelectorAll('[data-share]').forEach(b=>b.onclick=()=>{
+    const m=b.dataset.share;
+    if(!r.sign_token && m!=='copy'){ toast('הרץ קודם את מיגרציה 3 ורענן'); return; }
+    if(m==='copy'){ (navigator.clipboard?.writeText(url)||Promise.resolve()).then(()=>toast('הקישור הועתק ✓')); return; }
+    if(m==='wa'){ let d=(r.customer_phone||'').replace(/\D/g,''); if(d.startsWith('0')) d='972'+d.slice(1); window.open(`https://wa.me/${d}?text=${encodeURIComponent(msg)}`,'_blank'); return; }
+    if(m==='sms'){ location.href=`sms:${r.customer_phone||''}?&body=${encodeURIComponent(msg)}`; return; }
+    if(m==='mail'){ location.href=`mailto:?subject=${encodeURIComponent('טופס השכרה לחתימה — סייל-טים')}&body=${encodeURIComponent(msg)}`; return; }
+  });
+}
+
+// ─── Signature canvas ───
+function attachSignatures(tc){
+  tc.querySelectorAll('canvas.sig').forEach(c=>{
+    const field=c.dataset.sig;
+    const ctx=c.getContext('2d');
+    const ratio=window.devicePixelRatio||1;
+    c.width=c.offsetWidth*ratio; c.height=c.offsetHeight*ratio; ctx.scale(ratio,ratio);
+    ctx.lineCap='round'; ctx.lineJoin='round'; ctx.lineWidth=2.5;
+    ctx.strokeStyle=matchMedia('(prefers-color-scheme:dark)').matches?'#e8e6de':'#1a1a2e';
+    const val=state.current[field];
+    if(val){ const img=new Image(); img.onload=()=>ctx.drawImage(img,0,0,c.offsetWidth,c.offsetHeight); img.src=val; }
+    let drawing=false;
+    const pos=e=>{const r=c.getBoundingClientRect();const t=e.touches?.[0]||e;return{x:t.clientX-r.left,y:t.clientY-r.top};};
+    const start=e=>{e.preventDefault();drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);};
+    const move=e=>{if(!drawing)return;e.preventDefault();const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();};
+    const end=()=>{if(!drawing)return;drawing=false;saveRentalField(field,c.toDataURL());};
+    c.onmousedown=start; c.onmousemove=move; c.onmouseup=end; c.onmouseleave=end;
+    c.ontouchstart=start; c.ontouchmove=move; c.ontouchend=end;
+  });
+  tc.querySelectorAll('[data-sigclear]').forEach(b=>b.onclick=async()=>{
+    const field=b.dataset.sigclear;
+    const c=tc.querySelector(`canvas[data-sig="${field}"]`);
+    if(c){ c.getContext('2d').clearRect(0,0,c.width,c.height); }
+    await saveRentalField(field,null); renderEdit();
+  });
+}
+
+// ─── WAREHOUSE ───
+function buildMotorInventory(){
+  const map={};
+  state.rentals.forEach(r=>(r.motors||[]).forEach(m=>{
+    if(!m.device_num) return;
+    const inField = r.status==='active' && !m.end_date;
+    const prev=map[m.device_num];
+    const rec={ device:m.device_num, customer:r.customer_name, site:r.site, rentalNum:r.rental_num,
+      start:m.start_date, end:m.end_date, inField, condition:m.condition, fault:m.fault_description,
+      kind:m.unit_kind==='lift'?'lift':'motor', sku:m.sku };
+    if(!prev || (m.start_date||'')>=(prev.start||'')) map[m.device_num]=rec;
+  }));
+  return Object.values(map);
+}
+function renderWarehouse(mc){
+  const list=buildMotorInventory();
+  const inField=list.filter(m=>m.inField), inWh=list.filter(m=>!m.inField);
+  const avail=inWh.filter(m=>(state.warehouse[m.device]?.status||'available')==='available').length;
+  const repair=inWh.filter(m=>state.warehouse[m.device]?.status==='repair').length;
+  let filtered = state.whFilterLoc==='field'?inField : state.whFilterLoc==='warehouse'?inWh : list;
+  if(state.whFilterStatus!=='all') filtered=filtered.filter(m=>(state.warehouse[m.device]?.status||'available')===state.whFilterStatus);
+  if(state.whSearch){ const q=state.whSearch; filtered=filtered.filter(m=>(m.device||'').includes(q)||(m.customer||'').includes(q)||(m.site||'').includes(q)); }
+
+  mc.innerHTML=`
+    <div class="grid4" style="margin-bottom:12px">
+      <button class="stat" data-wloc="warehouse" style="color:var(--teal)"><div class="v">${inWh.length}</div><div class="l">במחסן</div></button>
+      <button class="stat" data-wloc="field" style="color:var(--orange)"><div class="v">${inField.length}</div><div class="l">בשטח</div></button>
+      <div class="stat" style="color:var(--purple)"><div class="v">${avail}</div><div class="l">זמינים</div></div>
+      <div class="stat" style="color:var(--red)"><div class="v">${repair}</div><div class="l">לתיקון</div></div>
+    </div>
+    <div class="card" style="border:1.5px solid #F0A06A">
+      <div style="font-weight:500;margin-bottom:8px">📷 קליטה למחסן — חיפוש / סריקה</div>
+      <div class="row">
+        <input id="whSearch" placeholder="חפש מס׳ מכשיר, לקוח, אתר..." value="${esc(state.whSearch)}" style="flex:1">
+        <button class="btn-teal" id="whScan" style="background:var(--orange)">📷 סרוק</button>
+      </div>
+    </div>
+    <div class="row" style="margin-bottom:12px">
+      <button class="pill ${state.whFilterLoc==='all'?'on':''}" data-wloc="all">הכל (${list.length})</button>
+      <button class="pill ${state.whFilterLoc==='warehouse'?'on':''}" data-wloc="warehouse">במחסן (${inWh.length})</button>
+      <button class="pill ${state.whFilterLoc==='field'?'on':''}" data-wloc="field">בשטח (${inField.length})</button>
+      ${WH_STATUSES.map(s=>`<button class="pill ${state.whFilterStatus===s.id?'on':''}" data-wstatus="${s.id}">${s.icon} ${s.label}</button>`).join('')}
+    </div>
+    <div id="whList"></div>`;
+
+  const si=document.getElementById('whSearch');
+  si.oninput=()=>{ state.whSearch=si.value; renderWarehouse(mc); const f=document.getElementById('whSearch'); if(f){f.focus();f.setSelectionRange(f.value.length,f.value.length);} };
+  document.getElementById('whScan').onclick=()=>openScanner(code=>{ state.whSearch=code; renderWarehouse(mc); });
+  mc.querySelectorAll('[data-wloc]').forEach(b=>b.onclick=()=>{ state.whFilterLoc=b.dataset.wloc; renderWarehouse(mc); });
+  mc.querySelectorAll('[data-wstatus]').forEach(b=>b.onclick=()=>{ state.whFilterStatus = state.whFilterStatus===b.dataset.wstatus?'all':b.dataset.wstatus; renderWarehouse(mc); });
+
+  const wl=document.getElementById('whList');
+  if(!filtered.length){ wl.innerHTML=`<div class="center"><div style="font-size:28px">📦</div><div>אין מנועים תואמים</div></div>`; return; }
+  wl.innerHTML=filtered.map(m=>{
+    const w=state.warehouse[m.device]||{}; const st=w.status||'available';
+    const si=WH_STATUSES.find(s=>s.id===st)||WH_STATUSES[0];
+    return `<div class="card" style="padding:12px 14px;margin-bottom:6px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <div class="row" style="align-items:center;margin-bottom:2px"><span class="mono" style="font-size:16px">${esc(m.device)}</span><span class="badge b-orange">${m.kind==='lift'?'🏗️ '+esc(m.sku||'במה'):'⚡ 4501'}</span></div>
+          <div style="font-size:11px;color:var(--text3)">${esc(m.customer||'')}${m.site?' · '+esc(m.site):''}${m.rentalNum?' · '+esc(m.rentalNum):''}</div>
+        </div>
+        ${m.inField?'<span class="badge b-amber">בשטח</span>':`<span class="badge ${si.bd}">${si.icon} ${si.label}</span>`}
+      </div>
+      <div style="display:flex;gap:12px;font-size:11px;color:var(--text2);margin-bottom:8px;padding:6px 8px;background:var(--card2);border-radius:8px;flex-wrap:wrap">
+        <span>📤 יצא: ${fmtD(m.start)}</span>
+        ${m.end?`<span>📥 חזר: ${fmtD(m.end)}</span>`:'<span style="color:var(--orange)">⏳ טרם הוחזר</span>'}
+        ${m.fault?`<span style="color:var(--red)">⚠️ ${esc(m.fault)}</span>`:''}
+      </div>
+      ${!m.inField?`<div class="row" style="align-items:center">
+        ${WH_STATUSES.map(s=>`<button class="pill ${st===s.id?'on':''}" data-setst="${esc(m.device)}" data-stv="${s.id}" style="padding:4px 10px;font-size:11px">${s.icon} ${s.label}</button>`).join('')}
+        <input data-whshelf="${esc(m.device)}" value="${esc(w.shelf)}" placeholder="מדף..." style="width:100px;padding:4px 8px;font-size:11px">
+        <input data-whnote="${esc(m.device)}" value="${esc(w.notes)}" placeholder="הערה..." style="flex:1;min-width:100px;padding:4px 8px;font-size:11px">
+      </div>`:''}
+    </div>`;
+  }).join('');
+  wl.querySelectorAll('[data-setst]').forEach(b=>b.onclick=async()=>{
+    await sb.from('warehouse').upsert({ device_num:b.dataset.setst, status:b.dataset.stv, last_update:new Date().toISOString() });
+    await loadData(); renderWarehouse(mc);
+  });
+  wl.querySelectorAll('[data-whshelf]').forEach(i=>i.onchange=async()=>{
+    await sb.from('warehouse').upsert({ device_num:i.dataset.whshelf, shelf:i.value, last_update:new Date().toISOString() });
+    await loadData();
+  });
+  wl.querySelectorAll('[data-whnote]').forEach(i=>i.onchange=async()=>{
+    await sb.from('warehouse').upsert({ device_num:i.dataset.whnote, notes:i.value, last_update:new Date().toISOString() });
+    await loadData();
+  });
+}
+
+// ─── LIFTS (במות הרמה) ───
+function renderLifts(mc){
+  const isMgr=state.profile.role==='manager';
+  const inCat=sku=>state.catalog.find(c=>c.sku===sku);
+  const missing=[...LIFTS.filter(l=>!inCat(l.sku)), ...(inCat(LIFT_TRANSPORT.sku)?[]:[LIFT_TRANSPORT])].length;
+  mc.innerHTML=`
+    <div class="card" style="background:linear-gradient(135deg,#7a4f05,#C4550A);color:#fff;border:none">
+      <div style="font-size:18px;font-weight:700">🏗️ במות מספריים ZOOMLION — סדרת DC</div>
+      <div style="font-size:12px;opacity:.85;margin-top:4px">במות הרמה חשמליות (Scissor Lifts) · תאימות CE/ANSI/GB · ${LIFTS.length} דגמים</div>
+    </div>
+    ${isMgr?`<button class="btn-teal" id="seedLifts" style="width:100%;margin-bottom:10px">➕ הוסף/עדכן את כל הבמות + הובלה במחירון${missing?` (${missing} חסרים)`:' (הכל קיים)'}</button>`:''}
+    ${LIFTS.map(l=>{
+      const c=inCat(l.sku);
+      const priceBadge = c&&c.price>0 ? `<span class="badge b-teal">₪${Number(c.price).toLocaleString()}${c.unit?' / '+esc(c.unit):''}</span>`
+        : c ? `<span class="badge b-amber">במחירון — ללא מחיר</span>`
+        : `<span class="badge b-gray">לא במחירון</span>`;
+      return `<div class="card" style="padding:0;overflow:hidden">
+        <div style="padding:13px 15px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+          <div>
+            <div class="row" style="align-items:center"><span class="mono" style="font-size:15px;color:var(--orange)">${esc(l.sku)}</span><span class="badge b-orange">במת מספריים</span></div>
+            <div style="font-size:12px;color:var(--text2);margin-top:3px">⬆️ גובה עבודה <b>${esc(l.wh)}</b> · 🏋️ נשיאה <b>${esc(l.cap)}</b></div>
+          </div>
+          ${priceBadge}
+        </div>
+        <details style="border-top:1px solid var(--border)">
+          <summary style="padding:10px 15px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text2)">מפרט טכני מלא ומדיה</summary>
+          <div style="padding:0 15px 14px">
+            <div style="background:var(--success-bg);border:1px solid var(--tealbd);border-radius:8px;padding:10px;margin-bottom:10px">
+              <div style="font-weight:600;font-size:12px;margin-bottom:5px">יתרונות בולטים</div>
+              <ul style="margin:0;padding-inline-start:18px;font-size:12px;color:var(--text2)">${l.highlights.map(h=>`<li>${esc(h)}</li>`).join('')}</ul>
+            </div>
+            <div class="grid2" style="gap:0 14px">
+              ${l.specs.map(([k,v])=>`<div style="display:flex;justify-content:space-between;gap:6px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--text3)">${esc(k)}</span><span style="font-weight:600">${esc(v)}</span></div>`).join('')}
+            </div>
+            <a href="https://www.youtube.com/watch?v=${esc(l.video)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;background:var(--red);color:#fff;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;text-decoration:none">▶️ סרטון הדרכה ותפעול</a>
+          </div>
+        </details>
+      </div>`;
+    }).join('')}
+    <div class="card" style="font-size:12px;color:var(--text2)">🚚 <b>הובלה במת הרמה</b> נוספת כמוצר נפרד במחירון (מק״ט "הובלה-במה") — ניתן להוסיף אותה כשורה בכל השכרה.</div>`;
+  const sl=document.getElementById('seedLifts');
+  if(sl) sl.onclick=async()=>{
+    const existing=new Set(state.catalog.map(c=>c.sku));
+    const rows=[];
+    LIFTS.forEach(l=>{ if(!existing.has(l.sku)) rows.push({ sku:l.sku, description:`במת מספריים ZOOMLION ${l.sku} — גובה עבודה ${l.wh}, נשיאה ${l.cap}`, unit:'יום', price:0, category:'במות הרמה', has_device:true }); });
+    if(!existing.has(LIFT_TRANSPORT.sku)) rows.push(LIFT_TRANSPORT);
+    if(!rows.length){ toast('הכל כבר קיים במחירון'); return; }
+    const { error } = await sb.from('catalog').insert(rows);
+    if(error){ toast('שגיאה: '+error.message); return; }
+    await loadData(); renderLifts(mc); toast(`נוספו ${rows.length} פריטים למחירון ✓`);
+  };
+}
+
+// ─── PRICELIST ───
+function renderPrices(mc){
+  const cats={}; state.catalog.forEach(c=>{ (cats[c.category||'אחר']=cats[c.category||'אחר']||[]).push(c); });
+  mc.innerHTML=`
+    <div class="card row" style="align-items:center">
+      <span style="font-weight:500">🏷️ הנחה גורפת</span>
+      <input type="range" min="0" max="50" value="0" id="gd" style="flex:1;min-width:120px;accent-color:var(--orange)">
+      <span id="gdv" style="min-width:40px;text-align:center;font-weight:600;color:var(--orange)">0%</span>
+      <button class="btn-ghost" id="gdApply">החל</button>
+    </div>
+    ${Object.entries(cats).map(([cat,items])=>`
+      <div style="margin-bottom:12px">
+        <div style="font-size:13px;font-weight:600;color:var(--text3);padding:6px 4px;border-bottom:1px solid var(--border);margin-bottom:4px">${esc(cat)}</div>
+        ${items.map(c=>`
+          <div class="card" style="padding:8px 12px;margin-bottom:4px;display:flex;align-items:center;gap:8px">
+            <input value="${esc(c.sku)}" data-cf="sku" data-cid="${c.id}" style="width:60px;padding:4px 6px;font-size:12px" class="mono">
+            <input value="${esc(c.description)}" data-cf="description" data-cid="${c.id}" style="flex:2;padding:4px 6px;font-size:13px">
+            <input value="${esc(c.unit)}" data-cf="unit" data-cid="${c.id}" style="width:50px;padding:4px 6px;font-size:12px;text-align:center">
+            <input type="number" value="${c.price}" data-cf="price" data-cid="${c.id}" style="width:84px;padding:4px 6px;text-align:center;font-weight:600">
+            <button class="btn-ghost" data-delcat="${c.id}" style="padding:4px 8px">🗑</button>
+          </div>`).join('')}
+        <button class="btn-ghost" data-addcat="${esc(cat)}" style="width:100%;padding:5px;font-size:12px">+ הוסף פריט</button>
+      </div>`).join('')}`;
+
+  const gd=document.getElementById('gd'), gdv=document.getElementById('gdv');
+  gd.oninput=()=>gdv.textContent=gd.value+'%';
+  document.getElementById('gdApply').onclick=async()=>{
+    const pct=+gd.value; if(!pct) return;
+    for(const c of state.catalog) await sb.from('catalog').update({ price:Math.round((c.price||0)*(1-pct/100)) }).eq('id',c.id);
+    await loadData(); renderPrices(mc); toast('ההנחה הוחלה ✓');
+  };
+  mc.querySelectorAll('[data-cf]').forEach(i=>i.onchange=async()=>{
+    const v = i.dataset.cf==='price' ? (parseFloat(i.value)||0) : i.value;
+    await sb.from('catalog').update({ [i.dataset.cf]:v }).eq('id',i.dataset.cid);
+    await loadData();
+  });
+  mc.querySelectorAll('[data-delcat]').forEach(b=>b.onclick=async()=>{
+    if(!confirm('למחוק פריט מהמחירון?')) return;
+    await sb.from('catalog').delete().eq('id',b.dataset.delcat);
+    await loadData(); renderPrices(mc);
+  });
+  mc.querySelectorAll('[data-addcat]').forEach(b=>b.onclick=async()=>{
+    await sb.from('catalog').insert({ sku:'NEW', description:'פריט חדש', unit:'יח׳', price:0, category:b.dataset.addcat });
+    await loadData(); renderPrices(mc);
+  });
+}
+
+// ─── USERS (manager) ───
+function renderUsers(mc){
+  const roles=['manager','field','team','pending'];
+  mc.innerHTML=`
+    <div class="card" style="background:var(--bluebg);border-color:#85B7EB;font-size:12px;color:var(--blue)">
+      משתמש חדש נרשם דרך מסך ההתחברות ומקבל תפקיד "ממתין". אשר אותו כאן ע״י בחירת תפקיד.
+    </div>
+    ${state.profiles.length?state.profiles.map(p=>`
+      <div class="card" style="padding:12px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="flex:1;min-width:140px">
+          <div style="font-weight:500">${esc(p.full_name||'(ללא שם)')}</div>
+          <div style="font-size:11px;color:var(--text3)">${esc(p.phone||'')} ${p.team_name?'· '+esc(p.team_name):''}</div>
+        </div>
+        ${p.role==='pending'?'<span class="badge b-amber">ממתין</span>':''}
+        <select data-urole="${p.id}" style="width:auto;padding:6px 10px">
+          ${roles.map(rr=>`<option value="${rr}" ${p.role===rr?'selected':''}>${roleLabel(rr)}</option>`).join('')}
+        </select>
+      </div>`).join(''):'<div class="center">אין משתמשים</div>'}`;
+  mc.querySelectorAll('[data-urole]').forEach(s=>s.onchange=async()=>{
+    const { error } = await sb.from('profiles').update({ role:s.value }).eq('id',s.dataset.urole);
+    if(error){ toast('שגיאה: '+error.message); return; }
+    await loadData(); renderUsers(mc); toast('התפקיד עודכן ✓');
+  });
+}
+
+// ─── Barcode Scanner ───
+function openScanner(onScan){
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px';
+  ov.innerHTML=`<div style="width:100%;max-width:400px"><video id="scanVid" playsinline></video><div style="display:flex;gap:8px;margin-top:12px"><input id="manualCode" placeholder="או הקלד מס׳ מכשיר..." style="flex:1;background:#fff;color:#000"><button class="btn-teal" id="manualOk">אישור</button></div><button class="btn-ghost" id="closeScan" style="width:100%;margin-top:8px">ביטול</button></div>`;
+  document.body.appendChild(ov);
+  let stream, det, iv;
+  const close=()=>{ if(iv)clearInterval(iv); if(stream)stream.getTracks().forEach(t=>t.stop()); ov.remove(); };
+  document.getElementById('closeScan').onclick=close;
+  document.getElementById('manualOk').onclick=()=>{ const v=document.getElementById('manualCode').value.trim(); if(v){ close(); onScan(v); } };
+  document.getElementById('manualCode').onkeydown=e=>{ if(e.key==='Enter'){ const v=e.target.value.trim(); if(v){ close(); onScan(v); } } };
+  (async()=>{
+    try{
+      stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+      const vid=document.getElementById('scanVid'); vid.srcObject=stream; vid.play();
+      if('BarcodeDetector' in window){
+        det=new BarcodeDetector({formats:['code_128','code_39','ean_13','ean_8','qr_code','upc_a','codabar','itf']});
+        iv=setInterval(async()=>{ if(vid.readyState<2)return; try{ const b=await det.detect(vid); if(b.length){ close(); onScan(b[0].rawValue); } }catch{} },300);
+      }
+    }catch(e){ const f=document.getElementById('manualCode'); if(f) f.placeholder='הקלד מס׳ מכשיר (אין מצלמה)'; }
+  })();
+}
+
+// ─── Excel: per-rental Priority export ───
+function exportPriority(r){
+  const rows=[]; let n=1;
+  (r.rental_lines||[]).forEach(l=>{ if(!parseFloat(l.qty)) return;
+    rows.push({"ש.":n++,'מק"ט':l.sku,"תאור מוצר":l.description,"מס' מכשיר":l.device_num||"","ת. התחלת השכרה":l.start_date?fmtD(l.start_date):fmtD(r.start_date),"ת. סיום השכרה":l.end_date?fmtD(l.end_date):"","כמות":parseFloat(l.qty)||1,"שכירות":parseFloat(l.rental_days)||0,"ימי שכירות בפועל":"","תעריף":parseFloat(l.price)||0});
+  });
+  (r.motors||[]).filter(m=>m.device_num).forEach(m=>{
+    const lift=m.unit_kind==='lift';
+    rows.push({"ש.":n++,'מק"ט':lift?m.sku:"4501","תאור מוצר":lift?('במת מספריים ZOOMLION '+m.sku):"מנוע משמלי פיגום תלוי","מס' מכשיר":m.device_num,"ת. התחלת השכרה":fmtD(m.start_date),"ת. סיום השכרה":m.end_date?fmtD(m.end_date):"","כמות":1,"שכירות":0,"ימי שכירות בפועל":"","תעריף":0});
+  });
+  if(!rows.length){ toast('אין נתונים לייצוא'); return; }
+  const blank=k=>Object.fromEntries(Object.keys(rows[0]).map(x=>[x,""]));
+  const info=[
+    {...blank(),"ש.":'סייל טים בע"מ'},
+    {...blank(),"ש.":`השכרה מספר: ${r.rental_num||'RN-'}`,"תאור מוצר":`לקוח: ${r.customer_name||''}`,"ת. התחלת השכרה":`תאריך: ${fmtD(r.date)}`},
+    {...blank(),"ש.":`אתר: ${r.site||''} ${r.site_address||''}`,"תאור מוצר":`טלפון: ${r.customer_phone||''}`},
+    blank(),
+  ];
+  const total=rows.reduce((s,x)=>s+((parseFloat(x["כמות"])||1)*(parseFloat(x["תעריף"])||0)),0);
+  const all=[...info,...rows];
+  if(r.discount) all.push({...blank(),"תאור מוצר":`הנחה: ${r.discount}%`,"תעריף":-Math.round(total*r.discount/100)});
+  all.push({...blank(),"תאור מוצר":'סה"כ',"תעריף":Math.round(total*(1-(r.discount||0)/100))});
+  const ws=XLSX.utils.json_to_sheet(all);
+  ws['!cols']=[{wch:6},{wch:8},{wch:30},{wch:12},{wch:14},{wch:14},{wch:8},{wch:10},{wch:16},{wch:12}];
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'הדפסת השכרה');
+  XLSX.writeFile(wb,`RN_${r.rental_num||r.customer_name||'rental'}_${fmtD(r.date)}.xlsx`);
+}
+
+// ─── REPORTS ───
+function renderReports(mc){
+  const customers=[...new Set(state.rentals.map(r=>r.customer_name).filter(Boolean))];
+  mc.innerHTML=`
+    <div class="card">
+      <div style="font-weight:500;margin-bottom:8px">🔍 פילטרים</div>
+      <div class="grid4">
+        <div><label>מתאריך</label><input type="date" id="rptFrom" value="${state.rptFrom}"></div>
+        <div><label>עד תאריך</label><input type="date" id="rptTo" value="${state.rptTo}"></div>
+        <div><label>לקוח</label><select id="rptCust"><option value="">כל הלקוחות</option>${customers.map(c=>`<option ${state.rptCust===c?'selected':''}>${esc(c)}</option>`).join('')}</select></div>
+        <div><label>סטטוס</label><select id="rptStatus">
+          <option value="all" ${state.rptStatus==='all'?'selected':''}>הכל</option>
+          <option value="active" ${state.rptStatus==='active'?'selected':''}>פעיל</option>
+          <option value="completed" ${state.rptStatus==='completed'?'selected':''}>הושלם</option></select></div>
+      </div>
+    </div>
+    <div class="grid2">
+      ${REPORT_TYPES.map(rt=>`<button class="card" data-rpt="${rt.id}" style="cursor:pointer;text-align:right;display:block">
+        <div class="row" style="align-items:center;margin-bottom:4px"><span style="font-size:18px">${rt.icon}</span><span style="font-size:13px;font-weight:600">${rt.label}</span></div>
+        <div style="font-size:11px;color:var(--text3)">${rt.desc}</div></button>`).join('')}
+    </div>
+    <div class="card" style="margin-top:4px">
+      <div style="font-weight:500;margin-bottom:8px">📈 סיכום מהיר</div>
+      <div class="grid4">
+        <div class="stat" style="color:var(--teal)"><div class="v">${state.rentals.filter(r=>r.status==='active').length}</div><div class="l">פעילות</div></div>
+        <div class="stat" style="color:var(--orange)"><div class="v">${state.rentals.reduce((s,r)=>s+motorCount(r),0)}</div><div class="l">מנועים</div></div>
+        <div class="stat" style="color:var(--amber)"><div class="v">${new Set(state.rentals.map(r=>r.customer_name).filter(Boolean)).size}</div><div class="l">לקוחות</div></div>
+        <div class="stat" style="color:var(--teal)"><div class="v" style="font-size:16px">₪${Math.round(state.rentals.reduce((s,r)=>s+rentalTotal(r),0)).toLocaleString()}</div><div class="l">הכנסות</div></div>
+      </div>
+    </div>`;
+  document.getElementById('rptFrom').onchange=e=>state.rptFrom=e.target.value;
+  document.getElementById('rptTo').onchange=e=>state.rptTo=e.target.value;
+  document.getElementById('rptCust').onchange=e=>state.rptCust=e.target.value;
+  document.getElementById('rptStatus').onchange=e=>state.rptStatus=e.target.value;
+  mc.querySelectorAll('[data-rpt]').forEach(b=>b.onclick=()=>exportReport(b.dataset.rpt));
+}
+function filterRentals(stOvr){
+  let d=state.rentals.slice();
+  const st=stOvr||state.rptStatus;
+  if(st!=='all') d=d.filter(r=>r.status===st);
+  if(state.rptCust) d=d.filter(r=>r.customer_name===state.rptCust);
+  if(state.rptFrom) d=d.filter(r=>(r.date||'')>=state.rptFrom);
+  if(state.rptTo) d=d.filter(r=>(r.date||'')<=state.rptTo);
+  return d;
+}
+function rowOf(r){
+  return { "מס׳ השכרה":r.rental_num||"", "שם לקוח":r.customer_name||"", "טלפון":r.customer_phone||"",
+    "ח.פ/ע.מ":r.customer_tax_id||"", "אתר":r.site||"", "כתובת אתר":r.site_address||"",
+    "ת. פתיחה":fmtD(r.date), "סטטוס":r.status==='active'?'פעיל':r.status==='completed'?'הושלם':'בוטל',
+    "ת. התחלה":fmtD(r.start_date), "ת. סיום":fmtD(r.end_date),
+    "מנועים":(r.motors||[]).filter(m=>m.device_num).map(m=>m.device_num).join(" , "),
+    "שורות שירות":(r.rental_lines||[]).filter(l=>parseFloat(l.qty)>0).map(l=>`${l.sku} ${l.description}`).join(" | "),
+    "הנחה %":r.discount||0, "סה״כ ₪":Math.round(rentalTotal(r)) };
+}
+function exportReport(type){
+  let rows=[], sn='דוח';
+  if(type==='active'){ rows=filterRentals('active').map(rowOf); sn='השכרות פעילות'; }
+  else if(type==='bydate'){ rows=filterRentals().map(rowOf); sn='לפי תאריכים'; }
+  else if(type==='bycustomer'){ rows=filterRentals().map(rowOf); sn=state.rptCust||'לפי לקוח'; }
+  else if(type==='motors'){
+    filterRentals().forEach(r=>(r.motors||[]).filter(m=>m.device_num).forEach(m=>{
+      const lift=m.unit_kind==='lift';
+      rows.push({"מס׳ מכשיר":m.device_num,'מק"ט':lift?m.sku:"4501","תאור":lift?('במת מספריים ZOOMLION '+m.sku):"מנוע משמלי פיגום תלוי","סוג":lift?'במת הרמה':'מנוע',"לקוח":r.customer_name,"אתר":r.site,"כתובת":r.site_address,"מס׳ השכרה":r.rental_num||"","ת. התחלה":fmtD(m.start_date),"ת. סיום":fmtD(m.end_date),"מצב":m.condition||"","סטטוס":r.status==='active'?'פעיל':'הושלם'});
+    })); sn='מעקב מנועים';
+  }
+  else if(type==='financial'){
+    const bc={}; filterRentals().forEach(r=>{ const k=r.customer_name||'לא מוגדר'; (bc[k]=bc[k]||{c:0,t:0,a:0}); bc[k].c++; bc[k].t+=rentalTotal(r); if(r.status==='active')bc[k].a++; });
+    Object.entries(bc).forEach(([k,v])=>rows.push({"לקוח":k,"השכרות":v.c,"פעילות":v.a,"סה״כ ₪":Math.round(v.t)}));
+    rows.sort((a,b)=>b["סה״כ ₪"]-a["סה״כ ₪"]);
+    rows.push({"לקוח":"סה״כ","השכרות":rows.reduce((s,x)=>s+x["השכרות"],0),"פעילות":"","סה״כ ₪":rows.reduce((s,x)=>s+x["סה״כ ₪"],0)});
+    sn='דוח כספי';
+  }
+  else if(type==='equipment'){
+    filterRentals('active').forEach(r=>{
+      (r.rental_lines||[]).filter(l=>parseFloat(l.qty)>0).forEach(l=>rows.push({'מק"ט':l.sku,"תאור":l.description,"כמות":parseFloat(l.qty)||1,"לקוח":r.customer_name,"אתר":r.site,"כתובת":r.site_address,"מס׳ השכרה":r.rental_num||"","תעריף ₪":parseFloat(l.price)||0}));
+      (r.motors||[]).filter(m=>m.device_num).forEach(m=>{const lift=m.unit_kind==='lift';rows.push({'מק"ט':lift?m.sku:"4501","תאור":lift?('במת מספריים '+m.sku):"מנוע משמלי","כמות":1,"לקוח":r.customer_name,"אתר":r.site,"כתובת":r.site_address,"מס׳ השכרה":r.rental_num||"","תעריף ₪":0,"מס׳ מכשיר":m.device_num});});
+    }); sn='ציוד באתרים';
+  }
+  else if(type==='priority'){
+    let n=1; filterRentals().forEach(r=>{
+      (r.rental_lines||[]).filter(l=>parseFloat(l.qty)>0).forEach(l=>rows.push({"ש.":n++,'מק"ט':l.sku,"תאור מוצר":l.description,"מס' מכשיר":"","ת. התחלת השכרה":fmtD(r.start_date),"ת. סיום השכרה":fmtD(r.end_date),"כמות":parseFloat(l.qty)||1,"לקוח":r.customer_name,"אתר":r.site,"מס׳ השכרה":r.rental_num||"","תעריף":parseFloat(l.price)||0}));
+      (r.motors||[]).filter(m=>m.device_num).forEach(m=>{const lift=m.unit_kind==='lift';rows.push({"ש.":n++,'מק"ט':lift?m.sku:"4501","תאור מוצר":lift?('במת מספריים ZOOMLION '+m.sku):"מנוע משמלי פיגום תלוי","מס' מכשיר":m.device_num,"ת. התחלת השכרה":fmtD(m.start_date),"ת. סיום השכרה":fmtD(m.end_date),"כמות":1,"לקוח":r.customer_name,"אתר":r.site,"מס׳ השכרה":r.rental_num||"","תעריף":0});});
+    }); sn='Priority Export';
+  }
+  if(!rows.length){ toast('אין נתונים עם הפילטרים הנוכחיים'); return; }
+  const ws=XLSX.utils.json_to_sheet(rows);
+  ws['!cols']=Object.keys(rows[0]).map(k=>({wch:Math.max(k.length+2,12)}));
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,sn.slice(0,31));
+  XLSX.writeFile(wb,`sealteam_${type}_${today()}.xlsx`);
+  toast('הדוח יוצא ✓');
+}
+
+init();
+</script>
+</body>
+</html>
