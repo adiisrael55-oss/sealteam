@@ -275,6 +275,7 @@ function renderList(){
         </div>
         <div class="row">
           <button class="glass" style="padding:8px 14px;font-size:13px" id="logoutBtn">יציאה</button>
+          ${isMgr?`<button class="glass" style="padding:8px 14px;font-size:13px" id="attBtn">👷 נוכחות</button>`:''}
           ${state.mainTab==='rentals'?`<button class="glass" style="padding:8px 14px" id="newBtn">+ חדש</button>`:''}
         </div>
       </div>
@@ -289,6 +290,7 @@ function renderList(){
     </div>
     <div id="mainContent"></div>`;
   document.getElementById('logoutBtn').onclick=async()=>{ await sb.auth.signOut(); };
+  const ab=document.getElementById('attBtn'); if(ab) ab.onclick=openAttendance;
   const nb=document.getElementById('newBtn'); if(nb) nb.onclick=newRental;
   document.querySelectorAll('[data-mt]').forEach(b=>b.onclick=()=>{ state.mainTab=b.dataset.mt; renderList(); });
   const mc=document.getElementById('mainContent');
@@ -378,6 +380,19 @@ async function saveRentalField(field,value){
   if(idx>=0) state.rentals[idx][field]=value;
 }
 function refreshCurrent(){ state.current=state.rentals.find(x=>x.id===state.current.id); }
+
+// סרגל תחתון: שמירה + חזרה (לכל טאב בהשכרה)
+function editBottomBar(saveLabel){
+  return `<div class="card" style="display:flex;gap:8px;position:sticky;bottom:8px;box-shadow:0 -3px 12px rgba(0,0,0,.10)">
+    <button class="btn-ghost" data-editback="1" style="flex:1">→ חזרה לרשימה</button>
+    <button class="btn-teal" data-editsave="1" style="flex:1">💾 ${saveLabel||'שמור'}</button>
+  </div>`;
+}
+function bindEditBar(tc){
+  const b=tc.querySelector('[data-editback]'); if(b) b.onclick=async()=>{ await loadData(); state.view='list'; state.current=null; render(); };
+  const s=tc.querySelector('[data-editsave]'); if(s) s.onclick=async()=>{ await loadData(); refreshCurrent(); renderEdit(); toast('נשמר ✓'); };
+}
+function isVideoUrl(u){ return /\.(mp4|mov|webm|m4v|3gp|avi|mkv)(\?|$)/i.test(u||''); }
 
 function pairsOf(r){
   const motors=(r.motors||[]).filter(m=>m.unit_kind!=='lift').slice().sort((a,b)=>(a.pair_index-b.pair_index)||(a.motor_position-b.motor_position));
@@ -560,6 +575,8 @@ function renderTabStart(tc){
   });
   bindPhotos(tc); bindShare(tc);
   attachSignatures(tc);
+  tc.insertAdjacentHTML('beforeend', editBottomBar('שמור ואשר הזמנה'));
+  bindEditBar(tc);
 }
 
 // ─── TAB: LINES ───
@@ -651,6 +668,8 @@ function renderTabLines(tc){
     await sb.from('rental_lines').delete().eq('id',b.dataset.delline);
     await loadData(); refreshCurrent(); renderEdit();
   });
+  tc.insertAdjacentHTML('beforeend', editBottomBar('שמור'));
+  bindEditBar(tc);
 }
 
 // ─── TAB: END ───
@@ -769,6 +788,8 @@ function renderTabEnd(tc){
   };
   bindPhotos(tc);
   attachSignatures(tc);
+  tc.insertAdjacentHTML('beforeend', editBottomBar('שמור'));
+  bindEditBar(tc);
 }
 
 async function setMotorCondition(motorId,cv){
@@ -854,28 +875,32 @@ function photosCard(phase, title){
       ${photos.length?`<span class="badge b-teal">${photos.length} תמונות</span>`:''}
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px">
-      ${photos.map(p=>`<div style="position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;border:1px solid var(--border)">
-        <a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" style="width:100%;height:100%;object-fit:cover" loading="lazy"></a>
+      ${photos.map(p=>`<div style="position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;border:1px solid var(--border);background:#000">
+        ${isVideoUrl(p.url||p.path)
+          ? `<video src="${esc(p.url)}" controls playsinline style="width:100%;height:100%;object-fit:cover"></video>`
+          : `<a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" style="width:100%;height:100%;object-fit:cover" loading="lazy"></a>`}
         <button data-delphoto="${p.id}" title="הסר" style="position:absolute;top:3px;inset-inline-start:3px;background:rgba(163,45,45,.92);color:#fff;border:none;border-radius:50%;width:22px;height:22px;padding:0;font-size:14px;line-height:1">×</button>
       </div>`).join('')}
       <button class="btn-ghost" data-addphoto="${phase}" style="aspect-ratio:1;flex-direction:column;gap:2px;border-style:dashed"><div style="font-size:24px">＋</div><div style="font-size:11px">הוסף תמונה</div></button>
+      <button class="btn-ghost" data-addvideo="${phase}" style="aspect-ratio:1;flex-direction:column;gap:2px;border-style:dashed"><div style="font-size:22px">🎥</div><div style="font-size:11px">הוסף סרטון</div></button>
     </div>
   </div>`;
 }
+function pickAndUpload(phase, accept){
+  const inp=document.createElement('input');
+  inp.type='file'; inp.accept=accept; inp.setAttribute('capture','environment'); inp.multiple=true;
+  inp.onchange=async()=>{
+    if(!inp.files.length) return;
+    toast('מעלה...'); let ok=0;
+    for(const f of inp.files){ if(await uploadPhoto(f,phase)) ok++; }
+    await loadData(); refreshCurrent(); renderEdit();
+    if(ok) toast(ok+' קבצים נוספו ✓');
+  };
+  inp.click();
+}
 function bindPhotos(tc){
-  tc.querySelectorAll('[data-addphoto]').forEach(b=>b.onclick=()=>{
-    const phase=b.dataset.addphoto;
-    const inp=document.createElement('input');
-    inp.type='file'; inp.accept='image/*'; inp.setAttribute('capture','environment'); inp.multiple=true;
-    inp.onchange=async()=>{
-      if(!inp.files.length) return;
-      toast('מעלה תמונות...'); let ok=0;
-      for(const f of inp.files){ if(await uploadPhoto(f,phase)) ok++; }
-      await loadData(); refreshCurrent(); renderEdit();
-      if(ok) toast(ok+' תמונות נוספו ✓');
-    };
-    inp.click();
-  });
+  tc.querySelectorAll('[data-addphoto]').forEach(b=>b.onclick=()=>pickAndUpload(b.dataset.addphoto,'image/*'));
+  tc.querySelectorAll('[data-addvideo]').forEach(b=>b.onclick=()=>pickAndUpload(b.dataset.addvideo,'video/*'));
   tc.querySelectorAll('[data-delphoto]').forEach(b=>b.onclick=async()=>{
     const p=(state.current.rental_photos||[]).find(x=>x.id===b.dataset.delphoto);
     if(!p) return;
@@ -1168,6 +1193,70 @@ function renderUsers(mc){
     if(error){ toast('שגיאה: '+error.message); return; }
     await loadData(); renderUsers(mc); toast('התפקיד עודכן ✓');
   });
+}
+
+// ─── Employee attendance (מסך נוכחות למנהל) ───
+async function openAttendance(){
+  let date = today();
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:14px;overflow:auto';
+  ov.onclick=e=>{ if(e.target===ov) ov.remove(); };
+  document.body.appendChild(ov);
+  async function draw(){
+    const [empRes, attRes] = await Promise.all([
+      sb.from('employees').select('*').eq('active',true).order('name'),
+      sb.from('attendance').select('*').eq('date',date),
+    ]);
+    if(empRes.error){ ov.innerHTML=`<div class="card" style="max-width:520px;width:100%;margin-top:20px"><div style="color:var(--red)">שגיאה: ${esc(empRes.error.message)}<br><span style="font-size:12px;color:var(--text2)">ודא שהרצת את מיגרציה 4.</span></div><button class="btn-ghost" id="attClose" style="width:100%;margin-top:10px">סגור</button></div>`; ov.querySelector('#attClose').onclick=()=>ov.remove(); return; }
+    const list=empRes.data||[]; const map={}; (attRes.data||[]).forEach(a=>map[a.employee_id]=a);
+    const present=list.filter(e=>map[e.id]?.status==='present').length;
+    const half=list.filter(e=>map[e.id]?.status==='half').length;
+    const absent=list.filter(e=>map[e.id]?.status==='absent').length;
+    ov.innerHTML=`<div class="card" style="max-width:560px;width:100%;margin-top:10px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:17px;font-weight:600">👷 נוכחות עובדים</span>
+        <button class="btn-ghost" id="attClose" style="padding:6px 12px">סגור</button>
+      </div>
+      <div class="row" style="align-items:center;margin-bottom:10px">
+        <label style="margin:0">תאריך</label>
+        <input type="date" id="attDate" value="${date}" style="width:auto">
+        <span class="badge b-teal">✅ ${present}</span>${half?`<span class="badge b-amber">🌗 ${half}</span>`:''}${absent?`<span class="badge b-red">❌ ${absent}</span>`:''}
+      </div>
+      ${list.length?list.map(e=>{
+        const st=map[e.id]?.status;
+        return `<div class="card" style="padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <div style="flex:1;min-width:90px"><div style="font-weight:500">${esc(e.name)}</div>${e.phone?`<div style="font-size:11px;color:var(--text3)">${esc(e.phone)}</div>`:''}</div>
+          <button class="pill ${st==='present'?'on':''}" data-att="${e.id}" data-st="present">✅ הגיע</button>
+          <button class="pill ${st==='half'?'on':''}" data-att="${e.id}" data-st="half" style="${st==='half'?'background:var(--amberbg);color:var(--amber);border-color:#EF9F27':''}">🌗 חצי יום</button>
+          <button class="pill ${st==='absent'?'on':''}" data-att="${e.id}" data-st="absent" style="${st==='absent'?'background:var(--redbg);color:var(--red);border-color:#F09595':''}">❌ לא הגיע</button>
+          <button class="btn-ghost" data-empdel="${e.id}" style="padding:3px 8px">🗑</button>
+        </div>`;
+      }).join(''):'<div class="center">אין עובדים — הוסף למטה ➕</div>'}
+      <div class="row" style="margin-top:8px">
+        <input id="empName" placeholder="שם עובד חדש..." style="flex:1">
+        <button class="btn-teal" id="empAdd">+ הוסף עובד</button>
+      </div>
+    </div>`;
+    ov.querySelector('#attClose').onclick=()=>ov.remove();
+    ov.querySelector('#attDate').onchange=e=>{ date=e.target.value; draw(); };
+    ov.querySelectorAll('[data-att]').forEach(b=>b.onclick=async()=>{
+      const { error } = await sb.from('attendance').upsert({ employee_id:b.dataset.att, date, status:b.dataset.st, updated_at:new Date().toISOString() },{ onConflict:'employee_id,date' });
+      if(error){ toast('שגיאה: '+error.message); return; }
+      draw();
+    });
+    ov.querySelectorAll('[data-empdel]').forEach(b=>b.onclick=async()=>{
+      if(!confirm('להסיר עובד מהרשימה?')) return;
+      await sb.from('employees').update({ active:false }).eq('id',b.dataset.empdel); draw();
+    });
+    const addBtn=ov.querySelector('#empAdd');
+    addBtn.onclick=async()=>{
+      const n=ov.querySelector('#empName').value.trim(); if(!n) return;
+      const { error } = await sb.from('employees').insert({ name:n });
+      if(error){ toast('שגיאה: '+error.message); return; }
+      draw();
+    };
+  }
+  draw();
 }
 
 // ─── Barcode Scanner ───

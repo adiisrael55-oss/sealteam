@@ -36,6 +36,7 @@ const sb = createClient('https://idkjxjbpljefacqwhtnl.supabase.co','sb_publishab
 const app = document.getElementById('app');
 const esc = s => (s==null?'':s.toString()).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmtD = d => { if(!d) return ''; const x=new Date(d); return isNaN(x)?'':`${String(x.getDate()).padStart(2,'0')}/${String(x.getMonth()+1).padStart(2,'0')}/${x.getFullYear()}`; };
+const isVideoUrl = u => /\.(mp4|mov|webm|m4v|3gp|avi|mkv)(\?|$)/i.test(u||'');
 const token = new URLSearchParams(location.search).get('token');
 
 async function main(){
@@ -65,7 +66,7 @@ function render(r){
 
     ${photos.length?`<div class="card">
       <div style="font-weight:600;margin-bottom:10px">📸 תיעוד מצב הציוד (${photos.length})</div>
-      <div class="photos">${photos.map(p=>`<a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" loading="lazy"></a>`).join('')}</div>
+      <div class="photos">${photos.map(p=>isVideoUrl(p.url)?`<video src="${esc(p.url)}" controls playsinline style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;background:#000"></video>`:`<a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" loading="lazy"></a>`).join('')}</div>
     </div>`:''}
 
     ${lines.length?`<div class="card">
