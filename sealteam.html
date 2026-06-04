@@ -1236,8 +1236,11 @@ async function openAttendance(){
         <input id="empName" placeholder="שם עובד חדש..." style="flex:1">
         <button class="btn-teal" id="empAdd">+ הוסף עובד</button>
       </div>
+      <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:8px">כל סימון נשמר אוטומטית. לחץ כדי לסיים:</div>
+      <button class="btn-teal" id="attSave" style="width:100%;margin-top:6px">💾 שמור וסגור</button>
     </div>`;
     ov.querySelector('#attClose').onclick=()=>ov.remove();
+    ov.querySelector('#attSave').onclick=()=>{ ov.remove(); toast('הנוכחות נשמרה ✓'); };
     ov.querySelector('#attDate').onchange=e=>{ date=e.target.value; draw(); };
     ov.querySelectorAll('[data-att]').forEach(b=>b.onclick=async()=>{
       const { error } = await sb.from('attendance').upsert({ employee_id:b.dataset.att, date, status:b.dataset.st, updated_at:new Date().toISOString() },{ onConflict:'employee_id,date' });
@@ -1311,6 +1314,40 @@ function exportPriority(r){
 }
 
 // ─── REPORTS ───
+function sheetExport(rows, fname, sheet){
+  if(!rows.length){ toast('אין נתונים בטווח שנבחר'); return; }
+  const ws=XLSX.utils.json_to_sheet(rows);
+  ws['!cols']=Object.keys(rows[0]).map(k=>({wch:Math.max(k.length+2,12)}));
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,sheet.slice(0,31));
+  XLSX.writeFile(wb, fname+'.xlsx'); toast('הדוח יוצא ✓');
+}
+async function exportAttendance(priority){
+  let from=state.rptFrom, to=state.rptTo;
+  if(!from || !to){ const d=new Date(); from=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`; to=today(); }
+  const [empRes, attRes] = await Promise.all([
+    sb.from('employees').select('*').eq('active',true).order('name'),
+    sb.from('attendance').select('*').gte('date',from).lte('date',to),
+  ]);
+  if(empRes.error){ toast('שגיאה: '+empRes.error.message); return; }
+  const emps=empRes.data||[];
+  const byEmp={}; (attRes.data||[]).forEach(a=>{ (byEmp[a.employee_id]=byEmp[a.employee_id]||[]).push(a); });
+  if(priority){
+    const rows=emps.map(e=>{
+      const list=byEmp[e.id]||[];
+      const present=list.filter(a=>a.status==='present').length;
+      const half=list.filter(a=>a.status==='half').length;
+      const absent=list.filter(a=>a.status==='absent').length;
+      return { "שם עובד":e.name, "טלפון":e.phone||"", "ימים מלאים":present, "חצאי ימים":half, "ימי היעדרות":absent, "סה״כ ימי עבודה":present + half*0.5 };
+    }).filter(r=>r["ימים מלאים"]||r["חצאי ימים"]||r["ימי היעדרות"]);
+    sheetExport(rows, `נוכחות_Priority_${from}_עד_${to}`, 'נוכחות Priority');
+  } else {
+    const rows=[];
+    emps.forEach(e=>{(byEmp[e.id]||[]).sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(a=>{
+      rows.push({ "שם עובד":e.name, "תאריך":fmtD(a.date), "סטטוס":a.status==='present'?'הגיע':a.status==='half'?'חצי יום':'לא הגיע', "הערה":a.note||"" });
+    });});
+    sheetExport(rows, `נוכחות_עובדים_${from}_עד_${to}`, 'נוכחות עובדים');
+  }
+}
 function renderReports(mc){
   const customers=[...new Set(state.rentals.map(r=>r.customer_name).filter(Boolean))];
   mc.innerHTML=`
@@ -1331,6 +1368,14 @@ function renderReports(mc){
         <div class="row" style="align-items:center;margin-bottom:4px"><span style="font-size:18px">${rt.icon}</span><span style="font-size:13px;font-weight:600">${rt.label}</span></div>
         <div style="font-size:11px;color:var(--text3)">${rt.desc}</div></button>`).join('')}
     </div>
+    ${state.profile.role==='manager'?`<div class="grid2" style="margin-top:8px">
+      <button class="card" data-attrpt="detail" style="cursor:pointer;text-align:right;display:block">
+        <div class="row" style="align-items:center;margin-bottom:4px"><span style="font-size:18px">👷</span><span style="font-size:13px;font-weight:600">דוח נוכחות עובדים</span></div>
+        <div style="font-size:11px;color:var(--text3)">נוכחות יומית מפורטת לפי עובד בטווח התאריכים</div></button>
+      <button class="card" data-attrpt="priority" style="cursor:pointer;text-align:right;display:block">
+        <div class="row" style="align-items:center;margin-bottom:4px"><span style="font-size:18px">🗓️</span><span style="font-size:13px;font-weight:600">נוכחות — ייצוא Priority</span></div>
+        <div style="font-size:11px;color:var(--text3)">סיכום חודשי לשכר, מוכן לייבוא לפריוריטי</div></button>
+    </div>`:''}
     <div class="card" style="margin-top:4px">
       <div style="font-weight:500;margin-bottom:8px">📈 סיכום מהיר</div>
       <div class="grid4">
@@ -1345,6 +1390,7 @@ function renderReports(mc){
   document.getElementById('rptCust').onchange=e=>state.rptCust=e.target.value;
   document.getElementById('rptStatus').onchange=e=>state.rptStatus=e.target.value;
   mc.querySelectorAll('[data-rpt]').forEach(b=>b.onclick=()=>exportReport(b.dataset.rpt));
+  mc.querySelectorAll('[data-attrpt]').forEach(b=>b.onclick=()=>exportAttendance(b.dataset.attrpt==='priority'));
 }
 function filterRentals(stOvr){
   let d=state.rentals.slice();
